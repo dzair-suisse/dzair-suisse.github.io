@@ -9,6 +9,7 @@ export const SITE = {
   joinForm:
     "https://docs.google.com/forms/d/e/1FAIpQLSdeZDe7HzFiykEniiz7zmaKlktJakwYzi3iFuHTpvT_-iPmpQ/viewform?usp=header",
   epfl: "https://www.epfl.ch",
+  unil: "https://www.unil.ch",
   locale: "fr_CH",
 } as const;
 

@@ -1,6 +1,7 @@
 ---
 import { Image } from "astro:assets";
 import epflLogo from "../assets/brand/epfl-logo.png";
+import unilLogo from "../assets/brand/unil-logo.svg";
 import { SITE } from "../lib/site";
 import { url } from "../lib/url";
 import Icon from "./Icon.astro";
@@ -16,19 +17,33 @@ import Icon from "./Icon.astro";
       <p class="text-muted max-w-sm text-sm">
         Association des étudiants algériens en Suisse.
       </p>
-      <a
-        href={SITE.epfl}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="inline-flex rounded-lg bg-white p-2 ring-1 ring-black/5"
-      >
-        <Image
-          src={epflLogo}
-          alt="EPFL (nouvel onglet)"
-          width={96}
-          densities={[1, 2]}
-        />
-      </a>
+      <div class="flex flex-wrap items-center gap-3">
+        <a
+          href={SITE.epfl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex h-14 items-center rounded-lg bg-white p-2 ring-1 ring-black/5"
+        >
+          <Image
+            src={epflLogo}
+            alt="EPFL (nouvel onglet)"
+            width={96}
+            densities={[1, 2]}
+          />
+        </a>
+        <a
+          href={SITE.unil}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex h-14 items-center rounded-lg bg-white p-2 ring-1 ring-black/5"
+        >
+          <Image
+            src={unilLogo}
+            alt="Université de Lausanne (nouvel onglet)"
+            height={40}
+          />
+        </a>
+      </div>
     </div>
 
     <nav aria-label="Pied de page">
