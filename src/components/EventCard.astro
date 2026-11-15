@@ -2,12 +2,17 @@
 import { getImage, Picture } from "astro:assets";
 import { CATEGORY_LABELS } from "../lib/categories";
 import type { EventEntry } from "../lib/events";
-import { formatMonth, isoMonth } from "../lib/site";
+import { formatMonth, isoMonth, titleHtml } from "../lib/site";
 import Icon from "./Icon.astro";
+
+/** Default `sizes`, matching the 1→2→3→4 column grid of the events page. */
+const GRID_SIZES =
+  "(min-width: 72rem) 17rem, (min-width: 56rem) 30vw, (min-width: 26rem) 46vw, 92vw";
 
 interface Props {
   event: EventEntry;
-  headingLevel?: "h2" | "h3";
+  /** `sizes` attribute of the photo, for grids with other column widths. */
+  sizes?: string;
   /** Load the image eagerly (first cards above the fold). */
   eager?: boolean;
   /** Show the category label on the card (useful outside grouped lists). */
@@ -16,12 +21,11 @@ interface Props {
 
 const {
   event,
-  headingLevel = "h3",
+  sizes = GRID_SIZES,
   eager = false,
   showCategory = false,
 } = Astro.props;
-const { title, date, location, image, alt, category } = event.data;
-const Heading = headingLevel;
+const { title, date, location, image, alt, category, fit } = event.data;
 const when = formatMonth(date);
 
 // Larger rendition opened by the lightbox (or directly, without JS).
@@ -38,23 +42,27 @@ const full = await getImage({
 >
   <a
     href={full.src}
-    class="event-media bg-surface-2 relative block overflow-hidden"
+    class="event-media relative block overflow-hidden"
+    data-fit={fit}
     data-lightbox
     data-astro-reload
     data-lightbox-alt={alt}
     data-lightbox-caption={`${title} — ${when} · ${location}`}
   >
-    <span class="sr-only">Agrandir la photo :</span>
+    <span class="sr-only">Agrandir la photo «&nbsp;{title}&nbsp;»&nbsp;:</span>
     <Picture
       src={image}
       alt={alt}
       formats={["avif"]}
       fallbackFormat="webp"
       widths={[320, 480, 640, 800]}
-      sizes="(min-width: 72rem) 17rem, (min-width: 52rem) 30vw, (min-width: 34rem) 46vw, 92vw"
+      sizes={sizes}
       loading={eager ? "eager" : "lazy"}
       fetchpriority={eager ? "high" : "auto"}
-      class="size-full object-cover object-top transition-transform duration-500 ease-(--ease-out-soft) group-hover:scale-[1.03]"
+      class:list={[
+        "size-full transition-transform duration-500 ease-(--ease-out-soft) group-hover:scale-[1.03]",
+        fit === "contain" ? "object-contain" : "object-cover object-top",
+      ]}
       transition:name={`event-${event.id}`}
     />
     <span
@@ -71,10 +79,11 @@ const full = await getImage({
         {CATEGORY_LABELS[category]}
       </p>
     )}
-    <Heading class="text-ink text-lg leading-snug font-semibold">
-      {title}
-    </Heading>
-    <p class="event-meta text-muted mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+    <h3
+      class="text-ink text-lg leading-snug font-semibold"
+      set:html={titleHtml(title)}
+    />
+    <p class="event-meta text-muted mt-auto flex flex-col items-start gap-1 text-sm">
       <span class="inline-flex items-center gap-1.5">
         <Icon name="calendar" size={16} />
         <time datetime={isoMonth(date)}>{when}</time>

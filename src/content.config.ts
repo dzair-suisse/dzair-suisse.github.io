@@ -8,7 +8,7 @@ const events = defineCollection({
   schema: ({ image }) =>
     z.object({
       title: z.string().min(1),
-      /** Premier jour du mois de l'événement (seuls le mois et l'année sont affichés). */
+      /** Premier jour du mois de l’événement (seuls le mois et l'année sont affichés). */
       date: z.coerce.date(),
       /** Lieu affiché, p. ex. « EPFL » ou « Stanserhorn, Nidwald ». */
       location: z.string().min(1),
@@ -16,6 +16,11 @@ const events = defineCollection({
       campus: z.enum(["EPFL", "UNIL", "Hors campus"]),
       category: z.enum(CATEGORIES),
       image: image(),
+      /**
+       * Cadrage dans la carte : `contain` montre l’affiche en entier (sur un
+       * fond teinté), `cover` remplit la vignette (photos).
+       */
+      fit: z.enum(["contain", "cover"]).default("cover"),
       /** Texte alternatif descriptif (en français). */
       alt: z.string().min(10),
     }),

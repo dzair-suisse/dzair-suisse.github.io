@@ -47,6 +47,9 @@ import Icon from "./Icon.astro";
       background-color 0.2s,
       border-color 0.2s;
   }
+  .lightbox-btn[hidden] {
+    display: none;
+  }
   .lightbox-btn:hover {
     border-color: var(--primary);
     background: var(--surface-2);
@@ -136,4 +139,8 @@ import Icon from "./Icon.astro";
   }
 
   document.addEventListener("astro:page-load", bindClose);
+  // The old page (and its cards) is going away: drop the stale reference.
+  document.addEventListener("astro:before-swap", () => {
+    opener = null;
+  });
 </script>

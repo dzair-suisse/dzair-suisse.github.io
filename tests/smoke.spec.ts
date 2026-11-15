@@ -46,7 +46,7 @@ test.describe("Accueil", () => {
       "Étudiants algériens en Suisse",
     );
     await expect(
-      page.getByRole("heading", { name: "Qui sommes-nous ?" }),
+      page.getByRole("heading", { name: /Qui sommes-nous/ }),
     ).toBeVisible();
     await expect(page.locator("#evenements article")).toHaveCount(3);
     await expect(
@@ -65,10 +65,24 @@ test.describe("Accueil", () => {
     await page.goto(BASE);
     const html = page.locator("html");
     await expect(html).toHaveAttribute("data-theme", "light");
-    await page.getByRole("button", { name: "Mode sombre" }).click();
+    const toggle = page.getByRole("button", { name: "Mode sombre" });
+    await expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await toggle.click();
     await expect(html).toHaveAttribute("data-theme", "dark");
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
     await page.reload();
     await expect(html).toHaveAttribute("data-theme", "dark");
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  });
+
+  test("le bouton de thème suit le thème du système", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "light" });
+    await page.goto(BASE);
+    const toggle = page.getByRole("button", { name: "Mode sombre" });
+    await expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await page.emulateMedia({ colorScheme: "dark" });
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
   });
 });
 
@@ -104,6 +118,101 @@ test.describe("Navigation", () => {
       .click();
     await expect(page).toHaveURL(/\/dzair_epfl\/?$/);
     expect(errors).toEqual([]);
+  });
+
+  test("parcours complet après une navigation côté client", async ({
+    page,
+    isMobile,
+  }) => {
+    const errors = trackErrors(page);
+    await page.emulateMedia({ colorScheme: "light" });
+    await page.goto(BASE);
+    // Marker that only survives a client-side (ClientRouter) navigation.
+    await page.evaluate(() => {
+      (window as unknown as { __spa: boolean }).__spa = true;
+    });
+
+    if (isMobile) {
+      await page.getByRole("button", { name: "Ouvrir le menu" }).click();
+      await page
+        .getByRole("dialog", { name: "Menu" })
+        .getByRole("link", { name: "Événements" })
+        .click();
+    } else {
+      await page
+        .getByRole("banner")
+        .getByRole("link", { name: "Événements" })
+        .click();
+    }
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Nos événements" }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => (window as unknown as { __spa?: boolean }).__spa,
+      ),
+    ).toBe(true);
+
+    // Filter (scripts re-bound after the swap).
+    const visibleCards = page.locator("#events-list article:visible");
+    await expect(visibleCards).toHaveCount(12);
+    await page.getByRole("radio", { name: /Célébrations/ }).check();
+    await expect(visibleCards).toHaveCount(4);
+    await expect(page).toHaveURL(/categorie=celebrations/);
+    await expect(page.getByRole("status")).toHaveText("4 événements affichés");
+
+    // Lightbox opens and closes.
+    await visibleCards.first().locator("a[data-lightbox]").click();
+    const dialog = page.locator("dialog#lightbox");
+    await expect(dialog).toBeVisible();
+    await page.getByRole("button", { name: "Fermer", exact: true }).click();
+    await expect(dialog).toBeHidden();
+
+    // Theme toggle.
+    const toggle = page.getByRole("button", { name: "Mode sombre" });
+    await expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await toggle.click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
+    expect(errors).toEqual([]);
+  });
+
+  test("le menu mobile est modal et rend le focus", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(!isMobile, "Menu mobile uniquement");
+    await page.goto(BASE);
+    const button = page.getByRole("button", { name: "Ouvrir le menu" });
+    await button.click();
+    const menu = page.getByRole("dialog", { name: "Menu" });
+    await expect(menu).toBeVisible();
+
+    // Tab cycles inside the dialog (the page behind is inert).
+    for (let i = 0; i < 8; i++) {
+      await page.keyboard.press("Tab");
+      const inside = await page.evaluate(
+        () => !!document.activeElement?.closest("#mobile-menu"),
+      );
+      if (
+        await page.evaluate(
+          () =>
+            document.activeElement === document.body || !document.activeElement,
+        )
+      )
+        continue; // focus briefly left for the (absent) browser UI
+      expect(inside).toBe(true);
+    }
+
+    await page.keyboard.press("Escape");
+    await expect(menu).toBeHidden();
+    await expect(button).toBeFocused();
+
+    // A same-page link closes the menu.
+    await button.click();
+    await menu.getByRole("link", { name: "Nous contacter" }).click();
+    await expect(menu).toBeHidden();
+    await expect(page).toHaveURL(/#contact$/);
   });
 
   test("affiche une page 404 en français", async ({ page }) => {

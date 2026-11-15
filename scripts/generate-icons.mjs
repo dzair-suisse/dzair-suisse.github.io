@@ -1,13 +1,12 @@
 // Regenerates the favicon PNGs and the Open Graph image from the brand sources.
 // Usage: node scripts/generate-icons.mjs
 import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 const root = new URL("../", import.meta.url);
-const pub = (name) =>
-  new URL(`public/${name}`, root).pathname.replace(/^\/([A-Za-z]:)/, "$1");
-const src = (name) =>
-  new URL(name, root).pathname.replace(/^\/([A-Za-z]:)/, "$1");
+const pub = (name) => fileURLToPath(new URL(`public/${name}`, root));
+const src = (name) => fileURLToPath(new URL(name, root));
 
 const svg = await readFile(pub("favicon.svg"));
 

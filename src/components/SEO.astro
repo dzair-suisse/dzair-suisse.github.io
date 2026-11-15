@@ -33,8 +33,11 @@ const ogImage = absoluteUrl(image, Astro.site);
 
 <title>{fullTitle}</title>
 <meta name="description" content={description} />
-<link rel="canonical" href={canonical} />
-{noindex && <meta name="robots" content="noindex" />}
+{noindex ? (
+  <meta name="robots" content="noindex" />
+) : (
+  <link rel="canonical" href={canonical} />
+)}
 
 <link rel="icon" href={url("favicon.svg")} type="image/svg+xml" />
 <link rel="icon" href={url("favicon.png")} type="image/png" sizes="any" />

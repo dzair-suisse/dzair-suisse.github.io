@@ -6,13 +6,16 @@ export default defineConfig({
   testDir: "./tests",
   fullyParallel: true,
   forbidOnly: !!process.env["CI"],
-  retries: process.env["CI"] ? 1 : 0,
+  // No retries: a flaky test should fail loudly rather than pass on rerun.
+  retries: 0,
   reporter: process.env["CI"]
     ? [["github"], ["list"], ["html", { open: "never" }]]
     : "list",
   use: {
     baseURL: `http://localhost:${PORT}`,
-    trace: "on-first-retry",
+    // Traces of failed tests in the CI report (with retries: 0, "on-first-retry"
+    // would never record). Off locally: tracing ~10 parallel workers is slow.
+    trace: process.env["CI"] ? "retain-on-failure" : "off",
   },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },

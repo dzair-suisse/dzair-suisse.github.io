@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://adessrrrr.github.io/dzair_epfl/sitemap-index.xml

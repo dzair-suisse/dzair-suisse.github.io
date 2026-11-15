@@ -38,7 +38,7 @@ const organization = {
   name: SITE.legalName,
   alternateName: SITE.name,
   url: absoluteUrl("", Astro.site),
-  logo: absoluteUrl("og-image.png", Astro.site),
+  logo: absoluteUrl("icon-512.png", Astro.site),
   email: SITE.email,
   description: SITE.description,
   sameAs: [SITE.instagram],
@@ -86,7 +86,7 @@ const organization = {
       </div>
 
       <div
-        class="hero-collage relative mx-auto aspect-[5/4] w-full max-w-xl"
+        class="hero-collage relative mx-auto aspect-[16/11] w-full max-w-xl sm:aspect-[5/4]"
         aria-hidden="true"
       >
         <div class="collage-a card absolute overflow-hidden p-0">
@@ -102,7 +102,7 @@ const organization = {
             class="size-full object-cover"
           />
         </div>
-        <div class="collage-b card float absolute overflow-hidden p-0">
+        <div class="collage-b card float absolute hidden overflow-hidden p-0 sm:block">
           <Picture
             src={heroHike}
             alt=""
@@ -113,7 +113,7 @@ const organization = {
             class="size-full object-cover"
           />
         </div>
-        <div class="collage-c card absolute overflow-hidden p-0">
+        <div class="collage-c card absolute hidden overflow-hidden p-0 sm:block">
           <Picture
             src={heroTalk}
             alt=""
@@ -147,7 +147,7 @@ const organization = {
       <div class="reveal max-w-2xl">
         <p class="eyebrow mb-4">À propos de DZAÏR</p>
         <h2 class="text-ink text-4xl font-semibold md:text-5xl">
-          Qui sommes-nous ?
+          Qui sommes-nous&nbsp;?
         </h2>
         <p class="text-muted mt-5 text-lg">
           Une association qui rassemble les étudiants algériens en Suisse,
@@ -194,7 +194,11 @@ const organization = {
         <ul class="latest-grid">
           {latest.map((event) => (
             <li class="reveal">
-              <EventCard event={event} showCategory />
+              <EventCard
+                event={event}
+                showCategory
+                sizes="(min-width: 72rem) 22rem, (min-width: 44rem) 31vw, 92vw"
+              />
             </li>
           ))}
         </ul>
@@ -211,7 +215,7 @@ const organization = {
           id="contact-title"
           class="mx-auto max-w-2xl text-3xl font-semibold text-white md:text-5xl"
         >
-          Contacte-nous sur Instagram pour rejoindre le canal WhatsApp !
+          Contacte-nous sur Instagram pour rejoindre le canal WhatsApp&nbsp;!
         </h2>
         <div class="mt-10 flex flex-wrap justify-center gap-3">
           <a
@@ -223,6 +227,7 @@ const organization = {
             <Icon name="instagram" size={20} />
             @dzair_suisse
             <span class="sr-only">sur Instagram (nouvel onglet)</span>
+            <Icon name="external" size={16} />
           </a>
           <a
             href={`mailto:${SITE.email}`}
@@ -259,6 +264,13 @@ const organization = {
     inset-block: 6% 14%;
     rotate: -2deg;
   }
+  /* Phones: one large photo + badge only (shorter hero). */
+  @media (width < 40rem) {
+    .collage-a {
+      inset-inline: 0 2%;
+      inset-block: 0 6%;
+    }
+  }
   .collage-b {
     inline-size: 40%;
     aspect-ratio: 1;
@@ -283,12 +295,8 @@ const organization = {
   .latest-grid {
     grid-template-columns: 1fr;
   }
-  @container events (min-width: 34rem) {
-    .latest-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-  @container events (min-width: 52rem) {
+  /* Straight from 1 to 3 columns: no orphan third card in a 2-column grid. */
+  @container events (min-width: 40rem) {
     .latest-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
@@ -310,6 +318,8 @@ const organization = {
   }
 
   .contact-panel {
+    /* Light focus ring on the dark green panel (≥ 3:1 in both themes). */
+    --focus: oklch(92% 0.09 95);
     background:
       radial-gradient(
         30rem 20rem at 100% 0%,

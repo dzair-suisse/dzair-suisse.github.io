@@ -1,3 +1,8 @@
+/**
+ * Event categories, in display order. The CSS-only filter rules on the events
+ * page are generated from this array (see `filterCss` in
+ * src/pages/evenements.astro), so adding a category here is enough.
+ */
 export const CATEGORIES = ["epfl-unil", "networking", "celebrations"] as const;
 
 export type Category = (typeof CATEGORIES)[number];

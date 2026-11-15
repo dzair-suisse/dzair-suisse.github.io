@@ -13,13 +13,25 @@ const groups = CATEGORIES.map((category) => ({
 })).filter((group) => group.events.length > 0);
 
 const plural = (n: number) => `${n} événement${n > 1 ? "s" : ""}`;
+
+/*
+ * CSS-only filter (works without JS): when a category chip is checked, hide
+ * the other categories. Generated from CATEGORIES so both always match.
+ */
+const filterCss = `${CATEGORIES.map(
+  (c) =>
+    `.events-page:has(#filtre-${c}:checked) [data-category]:not([data-category="${c}"])`,
+).join(", ")} { display: none; }`;
 ---
 
 <BaseLayout
-  title="Nos événements"
-  description="Les événements passés de DZAÏR : journées EPFL / UNIL, soirées networking et culturelles, célébrations et sorties."
+  title="Événements des étudiants algériens – EPFL et UNIL"
+  description={
+    "Les événements passés de DZAÏR : journées EPFL / UNIL, soirées networking et culturelles, célébrations et sorties."
+  }
   path="evenements/"
 >
+  <style is:inline set:html={filterCss}></style>
   <div class="events-page">
     <section
       class="relative isolate overflow-hidden pt-14 pb-10 md:pt-20"
@@ -47,7 +59,7 @@ const plural = (n: number) => `${n} événement${n > 1 ? "s" : ""}`;
             <legend class="text-muted mb-3 text-sm font-semibold">
               Filtrer par catégorie
             </legend>
-            <div class="flex flex-wrap gap-2">
+            <div class="chip-row">
               <label class="chip">
                 <input
                   type="radio"
@@ -57,7 +69,7 @@ const plural = (n: number) => `${n} événement${n > 1 ? "s" : ""}`;
                   checked
                 />
                 Tous
-                <span class="opacity-70">({events.length})</span>
+                <span class="chip-count">({events.length})</span>
               </label>
               {groups.map((group) => (
                 <label class="chip">
@@ -68,7 +80,7 @@ const plural = (n: number) => `${n} événement${n > 1 ? "s" : ""}`;
                     id={`filtre-${group.category}`}
                   />
                   {group.label}
-                  <span class="opacity-70">({group.events.length})</span>
+                  <span class="chip-count">({group.events.length})</span>
                 </label>
               ))}
             </div>

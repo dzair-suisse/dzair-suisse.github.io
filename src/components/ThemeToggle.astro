@@ -84,4 +84,6 @@ const { class: className } = Astro.props;
   }
 
   document.addEventListener("astro:page-load", init);
+  // Fired by BaseLayout when the OS colour scheme changes (no stored choice).
+  document.addEventListener("themechange", sync);
 </script>

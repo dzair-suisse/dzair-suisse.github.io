@@ -10,7 +10,7 @@ const current = stripBase(Astro.url.pathname);
 
 const links = [
   { href: url(), label: "Accueil", match: "/" },
-  { href: url("#quisommesnous"), label: "Qui sommes-nous ?" },
+  { href: url("#quisommesnous"), label: "Qui sommes-nous ?" },
   { href: url("evenements/"), label: "Événements", match: "/evenements" },
   { href: url("#contact"), label: "Nous contacter" },
 ] as const;
@@ -66,13 +66,17 @@ function isCurrent(link: (typeof links)[number]): boolean {
         class="btn btn-primary hidden py-2! text-sm sm:inline-flex"
       >
         Rejoins-nous
+        <Icon name="external" size={16} />
         <span class="sr-only">(nouvel onglet)</span>
       </a>
       <button
         type="button"
         class="text-ink hover:bg-surface-2 inline-grid size-11 place-items-center rounded-full lg:hidden"
-        popovertarget="mobile-menu"
+        commandfor="mobile-menu"
+        command="show-modal"
+        aria-haspopup="dialog"
         aria-controls="mobile-menu"
+        data-menu-open
       >
         <Icon name="menu" size={24} />
         <span class="sr-only">Ouvrir le menu</span>
@@ -80,18 +84,29 @@ function isCurrent(link: (typeof links)[number]): boolean {
     </div>
   </div>
 
-  <div id="mobile-menu" popover class="mobile-menu lg:hidden" aria-label="Menu">
+  <!--
+    Modal dialog: the page behind is inert, Tab stays inside, Esc closes it and
+    focus goes back to the menu button. Opened via an invoker command
+    (`commandfor`), with a script fallback for browsers without it.
+  -->
+  <dialog
+    id="mobile-menu"
+    class="mobile-menu lg:hidden"
+    aria-labelledby="mobile-menu-title"
+  >
     <div class="mb-4 flex items-center justify-between">
-      <p class="font-display text-xl font-semibold">Menu</p>
-      <button
-        type="button"
-        class="hover:bg-surface-2 inline-grid size-11 place-items-center rounded-full"
-        popovertarget="mobile-menu"
-        popovertargetaction="hide"
-      >
-        <Icon name="close" size={24} />
-        <span class="sr-only">Fermer le menu</span>
-      </button>
+      <p id="mobile-menu-title" class="font-display text-xl font-semibold">
+        Menu
+      </p>
+      <form method="dialog">
+        <button
+          type="submit"
+          class="hover:bg-surface-2 inline-grid size-11 place-items-center rounded-full"
+        >
+          <Icon name="close" size={24} />
+          <span class="sr-only">Fermer le menu</span>
+        </button>
+      </form>
     </div>
     <nav aria-label="Navigation mobile">
       <ul class="flex flex-col gap-1">
@@ -120,7 +135,7 @@ function isCurrent(link: (typeof links)[number]): boolean {
         <span class="sr-only">(nouvel onglet)</span>
       </a>
     </nav>
-  </div>
+  </dialog>
 </header>
 
 <style>
@@ -164,20 +179,50 @@ function isCurrent(link: (typeof links)[number]): boolean {
 </style>
 
 <script>
-  // Close the popover menu when a link inside it is followed (incl. same-page anchors).
+  const supportsInvokers = "commandForElement" in HTMLButtonElement.prototype;
+  const desktop = matchMedia("(min-width: 64rem)");
+
+  // Bound per page: the header is re-rendered on every ClientRouter navigation.
   function bindMenu(): void {
-    const menu = document.getElementById("mobile-menu");
-    if (!menu || menu.dataset["bound"]) return;
+    const menu = document.getElementById("mobile-menu") as HTMLDialogElement;
+    const opener =
+      document.querySelector<HTMLButtonElement>("[data-menu-open]");
+    if (!menu || !opener || menu.dataset["bound"]) return;
     menu.dataset["bound"] = "true";
+
+    if (!supportsInvokers) {
+      opener.addEventListener("click", () => {
+        if (!menu.open) menu.showModal();
+      });
+    }
+
+    // Close when a link inside is followed (incl. same-page anchors).
     menu.addEventListener("click", (event) => {
-      const target = event.target as HTMLElement | null;
-      if (
-        target?.closest("[data-close-menu]") &&
-        menu.matches(":popover-open")
-      ) {
-        menu.hidePopover();
+      const target = event.target as Element | null;
+      if (target?.closest("[data-close-menu]")) return menu.close();
+      // Click on the backdrop (outside the sheet's box).
+      if (target === menu) {
+        const r = menu.getBoundingClientRect();
+        const inside =
+          event.clientX >= r.left &&
+          event.clientX <= r.right &&
+          event.clientY >= r.top &&
+          event.clientY <= r.bottom;
+        if (!inside) menu.close();
       }
     });
+
+    // Focus back on the menu button (Esc, close button, link to an anchor).
+    menu.addEventListener("close", () => {
+      if (opener.isConnected) opener.focus();
+    });
   }
+
+  // The menu is hidden from the lg breakpoint: never leave the page inert.
+  desktop.addEventListener("change", (event) => {
+    const menu = document.getElementById("mobile-menu") as HTMLDialogElement;
+    if (event.matches && menu?.open) menu.close();
+  });
+
   document.addEventListener("astro:page-load", bindMenu);
 </script>

@@ -9,9 +9,10 @@ on:
 permissions:
   contents: read
 
+# One run per branch/PR; superseded PR runs are cancelled, pushes to main are not.
 concurrency:
-  group: pages-${{ github.ref }}
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint:
@@ -38,10 +39,23 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run build
+      - name: Playwright version
+        id: playwright
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - name: Install Playwright browser
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Install Playwright system dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
       - name: Smoke tests (Playwright)
-        run: |
-          npx playwright install --with-deps chromium
-          npm test
+        run: npm test
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -58,6 +72,10 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: [lint, build]
     runs-on: ubuntu-latest
+    # Never cancel a Pages deployment half-way.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     permissions:
       pages: write
       id-token: write

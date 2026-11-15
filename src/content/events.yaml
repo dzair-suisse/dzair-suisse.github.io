@@ -1,11 +1,12 @@
 # Événements de DZAÏR.
 # Pour ajouter un événement : copier un bloc, choisir un identifiant (id) unique,
 # déposer la photo dans src/assets/events/ et renseigner les champs.
-# - date : utiliser le premier jour du mois (seuls le mois et l'année sont affichés)
+# - date : utiliser le premier jour du mois (seuls le mois et l’année sont affichés)
 # - campus : EPFL | UNIL | Hors campus
 # - category : epfl-unil | networking | celebrations
 # - image : chemin relatif à ce fichier
-# - alt : description de l'image en français (accessibilité)
+# - alt : description de l’image en français (accessibilité)
+# - fit : contain (affiche, montrée en entier) | cover (photo, recadrée ; par défaut)
 
 # --- Événements EPFL / UNIL ---
 - id: semaine-associations-2025
@@ -15,7 +16,8 @@
   campus: EPFL
   category: epfl-unil
   image: ../assets/events/semaine-associations-2025.jpg
-  alt: Affiche « Semaine des associations » invitant à rejoindre le stand DZAIR, avec un drapeau algérien sur un fond de photos floutées.
+  fit: contain
+  alt: Affiche « Semaine des associations » invitant à rejoindre le stand DZAÏR, avec un drapeau algérien sur un fond de photos floutées.
 
 - id: global-village-2025
   title: Global Village 2025
@@ -24,16 +26,18 @@
   campus: UNIL
   category: epfl-unil
   image: ../assets/events/global-village-2025.jpg
-  alt: Affiche orange « DZAIR à Global Village ! » avec une guirlande de drapeaux du monde, le drapeau algérien et des illustrations de plats.
+  fit: contain
+  alt: Affiche orange « DZAIR à Global Village ! » avec une guirlande de drapeaux du monde, le drapeau algérien et des illustrations de plats.
 
 - id: journee-accueil-2024
-  title: Journée d'accueil 2024
+  title: Journée d’accueil 2024
   date: 2024-09-01
   location: UNIL
   campus: UNIL
   category: epfl-unil
   image: ../assets/events/journee-accueil-2024.jpeg
-  alt: Affiche verte « Journée d'accueil » de l'Université de Lausanne présentant le stand de l'Association des étudiants algériens en Suisse.
+  fit: contain
+  alt: Affiche verte « Journée d’accueil » de l’Université de Lausanne présentant le stand de l’Association des étudiants algériens en Suisse.
 
 - id: vivapoly-2024
   title: Vivapoly 2024
@@ -42,7 +46,8 @@
   campus: EPFL
   category: epfl-unil
   image: ../assets/events/vivapoly-2024.jpeg
-  alt: Affiche festive « Viva Poly » de DZAIR au Rolex Learning Center, entourée de photos de plats algériens.
+  fit: contain
+  alt: Affiche festive « Viva Poly » de DZAÏR au Rolex Learning Center, entourée de photos de plats algériens.
 
 # --- Networking & Partages ---
 - id: entraide-post-epfl-2025
@@ -52,44 +57,49 @@
   campus: EPFL
   category: networking
   image: ../assets/events/entraide-post-epfl-2025.jpeg
-  alt: Un intervenant présente devant un grand écran projetant une diapositive sur l'emploi, dans un auditoire.
+  fit: cover
+  alt: Un intervenant présente devant un grand écran projetant une diapositive sur l’emploi, dans un auditoire.
 
 - id: dzair-x-turcopoly-2024
-  title: Soirée culturelle DZAIR x TURCOPOLY
+  title: Soirée culturelle DZAÏR x TURCOPOLY
   date: 2024-11-01
   location: EPFL
   campus: EPFL
   category: networking
   image: ../assets/events/dzair-x-turcopoly-2024.jpeg
-  alt: Affiche « Turquie et Algérie – soirée culturelle » avec les drapeaux algérien et turc entourés d'illustrations de thé, de café et de plats.
+  fit: contain
+  alt: Affiche « Turquie et Algérie – soirée culturelle » avec les drapeaux algérien et turc entourés d’illustrations de thé, de café et de plats.
 
 - id: projection-143-rue-du-desert-2024
-  title: Projection du film « 143 rue du désert »
+  title: Projection du film « 143 rue du désert »
   date: 2024-02-01
   location: UNIL
   campus: UNIL
   category: networking
   image: ../assets/events/projection-143-rue-du-desert-2024.jpeg
-  alt: Affiche de la projection du film « 143, rue du désert » de Hassen Ferhani à La Grange, avec le portrait d'une femme assise.
+  fit: contain
+  alt: Affiche de la projection du film « 143 rue du désert » de Hassen Ferhani à La Grange, avec le portrait d’une femme assise.
 
 - id: apero-dzair-x-apml-2023
-  title: Apéro DZAIR x APML
+  title: Apéro DZAÏR x APML
   date: 2023-10-01
   location: EPFL
   campus: EPFL
   category: networking
   image: ../assets/events/apero-dzair-x-apml-2023.jpeg
-  alt: Affiche « APML x DZAIR Game Apéro » illustrée de cartes à jouer, de dés, de jetons et d'un ballon de football.
+  fit: contain
+  alt: Affiche « APML x DZAIR Game Apéro » illustrée de cartes à jouer, de dés, de jetons et d’un ballon de football.
 
 # --- Célébrations & Sorties ---
 - id: celebration-1er-novembre-2025
-  title: Célébration du 1er Novembre
+  title: Célébration du 1er novembre
   date: 2025-11-01
   location: EPFL
   campus: EPFL
   category: celebrations
   image: ../assets/events/celebration-1er-novembre-2025.jpeg
-  alt: Affiche de la projection du film « La Bataille d'Alger » suivie d'un apéritif, en commémoration du 1er novembre 1954.
+  fit: contain
+  alt: Affiche de la projection du film « La Bataille d’Alger » suivie d’un apéritif, en commémoration du 1er novembre 1954.
 
 - id: randonnee-stanserhorn-2025
   title: Randonnée au Stanserhorn
@@ -98,7 +108,8 @@
   campus: Hors campus
   category: celebrations
   image: ../assets/events/randonnee-stanserhorn-2025.jpeg
-  alt: Groupe d'étudiants assis à la proue d'un bateau battant pavillon suisse, sur un lac entouré de montagnes.
+  fit: cover
+  alt: Groupe d’étudiants assis à la proue d’un bateau battant pavillon suisse, sur un lac entouré de montagnes.
 
 - id: randonnee-crans-montana-2025
   title: Randonnée à Crans-Montana
@@ -107,7 +118,8 @@
   campus: Hors campus
   category: celebrations
   image: ../assets/events/randonnee-crans-montana-2025.jpeg
-  alt: Étudiants assis dans l'herbe pour une pause pique-nique, face à des montagnes boisées sous un ciel nuageux.
+  fit: cover
+  alt: Étudiants assis dans l’herbe pour une pause pique-nique, face à des montagnes boisées sous un ciel nuageux.
 
 - id: ftour-ramadan-2025
   title: Ftour convivial Ramadan 2025
@@ -116,4 +128,5 @@
   campus: EPFL
   category: celebrations
   image: ../assets/events/ftour-ramadan-2025.jpeg
-  alt: Affiche « Ramadan Iftar Dinner » de DZAIR, décorée de lanternes, d'étoiles, de croissants de lune et du drapeau algérien.
+  fit: contain
+  alt: Affiche « Ramadan Iftar Dinner » de DZAÏR, décorée de lanternes, d’étoiles, de croissants de lune et du drapeau algérien.

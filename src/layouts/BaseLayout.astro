@@ -2,6 +2,7 @@
 import "@fontsource-variable/montserrat";
 import "@fontsource-variable/fraunces";
 import "../styles/global.css";
+import frauncesLatin from "@fontsource-variable/fraunces/files/fraunces-latin-wght-normal.woff2?url";
 import montserratLatin from "@fontsource-variable/montserrat/files/montserrat-latin-wght-normal.woff2?url";
 import { ClientRouter } from "astro:transitions";
 import Footer from "../components/Footer.astro";
@@ -58,13 +59,24 @@ const props = Astro.props;
               } catch {
                 /* storage unavailable */
               }
-              if (!stored) apply(document);
+              if (stored) return;
+              apply(document);
+              // Lets the theme toggle(s) update aria-pressed.
+              document.dispatchEvent(new CustomEvent("themechange"));
             },
           );
         }
       })();
     </script>
 
+    <!-- Latin subsets of the heading (LCP) and body fonts. -->
+    <link
+      rel="preload"
+      href={frauncesLatin}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <link
       rel="preload"
       href={montserratLatin}

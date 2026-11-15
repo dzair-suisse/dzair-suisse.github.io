@@ -28,3 +28,21 @@ export function formatMonth(date: Date): string {
 export function isoMonth(date: Date): string {
   return date.toISOString().slice(0, 7);
 }
+
+const escapeHtml = (s: string): string =>
+  s.replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ] ?? c,
+  );
+
+/**
+ * Escapes a plain-text title and sets French ordinal abbreviations in
+ * superscript: « 1er novembre » → `1<sup>er</sup> novembre`. Use with `set:html`.
+ */
+export function titleHtml(title: string): string {
+  // Ordinals: 1er, 1re (premier / première).
+  return escapeHtml(title).replace(/\b1(er|re)\b/g, "1<sup>$1</sup>");
+}
