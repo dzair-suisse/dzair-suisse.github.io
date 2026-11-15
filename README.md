@@ -70,6 +70,43 @@ tests/                  tests Playwright
 3. `npm run check && npm run build` : le schéma refuse toute donnée invalide.
    Les événements sont triés du plus récent au plus ancien ; les trois plus récents apparaissent sur l’accueil.
 
+## Import automatique depuis Instagram
+
+Le workflow **Synchronisation Instagram** (`.github/workflows/sync-instagram.yml`) tourne chaque
+jour (et à la demande depuis l’onglet _Actions_). Il lit les derniers posts de @dzair_suisse, et
+Claude (`claude-opus-5-5`) décide pour chaque nouveau post s’il s’agit d’un événement, s’il fait
+doublon avec un événement existant, et en extrait titre, date, lieu, catégorie et texte alternatif.
+Les nouveaux événements sont ajoutés à `src/content/instagram-events.yaml` (image dans
+`src/assets/events/instagram/`), le site est vérifié, commité puis redéployé.
+
+- Corriger un événement importé : modifier son bloc dans `instagram-events.yaml`, il ne sera
+  jamais réécrit.
+- Retirer un événement importé : supprimer son bloc (le post reste marqué « traité » dans
+  `instagram-state.json`).
+- Faire relire un post par Claude : supprimer son entrée dans `instagram-state.json`.
+
+### Configuration (une seule fois)
+
+1. **Compte Instagram professionnel** : dans l’app Instagram, _Paramètres → Type de compte_ →
+   passer @dzair_suisse en compte _Créateur_ ou _Entreprise_ (gratuit).
+2. **App Meta** : sur <https://developers.facebook.com/apps>, créer une app de type _Entreprise_,
+   ajouter le produit **Instagram → API setup with Instagram login**, ajouter @dzair_suisse comme
+   testeur Instagram (et accepter l’invitation dans l’app Instagram), puis **Generate token**
+   (permission `instagram_business_basic`). Le jeton généré est un jeton longue durée (60 jours).
+3. **Clé Anthropic** : créer une clé sur <https://platform.claude.com> (quelques centimes par mois).
+4. **Secrets GitHub** : _Settings → Secrets and variables → Actions → New repository secret_ :
+   - `INSTAGRAM_ACCESS_TOKEN` : le jeton de l’étape 2 ;
+   - `ANTHROPIC_API_KEY` : la clé de l’étape 3 ;
+   - `SECRETS_PAT` (facultatif) : un jeton GitHub _fine-grained_ limité à ce dépôt avec la
+     permission « Secrets: Read and write ». Le workflow enregistre alors chaque jour le jeton
+     Instagram rafraîchi. Sans lui, régénérer le jeton Instagram avant 60 jours.
+5. Lancer le workflow une première fois : _Actions → Synchronisation Instagram → Run workflow_.
+
+Sans `INSTAGRAM_ACCESS_TOKEN`, le workflow ne fait rien et le site garde ses événements manuels.
+
+Test local contre de faux serveurs : `INSTAGRAM_GRAPH_URL` et `ANTHROPIC_BASE_URL` permettent de
+rediriger les appels.
+
 ## Liens internes
 
 Le site est servi sous `/dzair_epfl/`. Pour tout lien interne ou fichier de `public/`, utiliser

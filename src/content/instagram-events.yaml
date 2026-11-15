@@ -1,0 +1,8 @@
+# Événements importés automatiquement depuis Instagram (@dzair_suisse).
+# Ce fichier est généré par scripts/sync-instagram.ts : chaque jour, les
+# nouveaux posts sont lus par Claude, qui ne garde que les événements.
+#
+# Tu peux corriger un champ à la main : le script ne réécrit jamais une
+# entrée existante. Pour retirer un événement, supprime son bloc ; le post
+# reste marqué comme traité dans instagram-state.json et ne reviendra pas.
+[]

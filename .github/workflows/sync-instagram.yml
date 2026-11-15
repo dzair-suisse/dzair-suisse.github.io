@@ -1,0 +1,81 @@
+name: Synchronisation Instagram
+
+# Chaque jour, importe les nouveaux événements publiés sur @dzair_suisse,
+# vérifie que le site compile, commite sur main puis relance le déploiement.
+on:
+  schedule:
+    - cron: "17 5 * * *" # tous les jours vers 6h–7h (heure suisse)
+  workflow_dispatch:
+
+permissions:
+  contents: write # commit des nouveaux événements
+  actions: write # relancer le workflow de déploiement
+
+concurrency:
+  group: instagram-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+
+      - name: Importer les posts Instagram
+        env:
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          REFRESHED_TOKEN_FILE: ${{ runner.temp }}/ig-token
+        run: node scripts/sync-instagram.ts
+
+      # Facultatif : si un jeton GitHub (secret SECRETS_PAT, droit « Secrets:
+      # write » sur ce dépôt) est fourni, le jeton Instagram rafraîchi est
+      # enregistré automatiquement et n'expire jamais.
+      - name: Enregistrer le jeton Instagram rafraîchi
+        env:
+          GH_TOKEN: ${{ secrets.SECRETS_PAT }}
+          TOKEN_FILE: ${{ runner.temp }}/ig-token
+        run: |
+          if [ -s "$TOKEN_FILE" ] && [ -n "$GH_TOKEN" ]; then
+            echo "::add-mask::$(cat "$TOKEN_FILE")"
+            gh secret set INSTAGRAM_ACCESS_TOKEN --repo "$GITHUB_REPOSITORY" < "$TOKEN_FILE"
+            echo "Jeton Instagram mis à jour."
+          fi
+          rm -f "$TOKEN_FILE"
+
+      - name: Y a-t-il du nouveau ?
+        id: diff
+        run: |
+          git add -A src/content src/assets/events
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --cached --stat
+          fi
+
+      - name: Vérifier que le site compile
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          npx prettier --write src/content/instagram-events.yaml src/content/instagram-state.json
+          npm run check
+          npm run build
+
+      - name: Commit et déploiement
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A src/content src/assets/events
+          git commit -m "Synchronisation des événements Instagram"
+          git push
+          # Un push fait avec GITHUB_TOKEN ne déclenche pas d'autre workflow :
+          # on lance le déploiement explicitement.
+          gh workflow run deploy.yml --ref main
