@@ -1,0 +1,15 @@
+{
+  "name": "DZAÏR – Étudiants algériens en Suisse",
+  "short_name": "DZAÏR",
+  "lang": "fr",
+  "start_url": "/dzair_epfl/",
+  "scope": "/dzair_epfl/",
+  "display": "browser",
+  "background_color": "#FAF7F0",
+  "theme_color": "#0B4D3A",
+  "icons": [
+    { "src": "/dzair_epfl/favicon.svg", "type": "image/svg+xml", "sizes": "any" },
+    { "src": "/dzair_epfl/icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/dzair_epfl/icon-512.png", "type": "image/png", "sizes": "512x512" }
+  ]
+}

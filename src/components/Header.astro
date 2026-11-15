@@ -1,0 +1,183 @@
+---
+import { Image } from "astro:assets";
+import logo from "../assets/brand/logo-dzair.png";
+import { SITE } from "../lib/site";
+import { stripBase, url } from "../lib/url";
+import Icon from "./Icon.astro";
+import ThemeToggle from "./ThemeToggle.astro";
+
+const current = stripBase(Astro.url.pathname);
+
+const links = [
+  { href: url(), label: "Accueil", match: "/" },
+  { href: url("#quisommesnous"), label: "Qui sommes-nous ?" },
+  { href: url("evenements/"), label: "Événements", match: "/evenements" },
+  { href: url("#contact"), label: "Nous contacter" },
+] as const;
+
+function isCurrent(link: (typeof links)[number]): boolean {
+  return "match" in link && link.match === current;
+}
+---
+
+<header
+  class="sticky top-0 z-50 border-b border-[color-mix(in_oklch,var(--border)_70%,transparent)] bg-(--header-bg) backdrop-blur-xl backdrop-saturate-150"
+  transition:name="site-header"
+>
+  <div class="container-page flex h-[4.5rem] items-center justify-between gap-4">
+    <a
+      href={url()}
+      class="logo-link flex items-center rounded-xl px-1.5 py-1"
+      aria-label={`${SITE.name} – accueil`}
+      transition:name="site-logo"
+    >
+      <Image
+        src={logo}
+        alt=""
+        width={140}
+        densities={[1, 2]}
+        loading="eager"
+        class="h-auto w-[7.5rem] sm:w-[8.75rem]"
+      />
+    </a>
+
+    <nav aria-label="Navigation principale" class="hidden lg:block">
+      <ul class="flex items-center gap-1">
+        {links.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              class="nav-link"
+              aria-current={isCurrent(link) ? "page" : undefined}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <ThemeToggle />
+      <a
+        href={SITE.joinForm}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-primary hidden py-2! text-sm sm:inline-flex"
+      >
+        Rejoins-nous
+        <span class="sr-only">(nouvel onglet)</span>
+      </a>
+      <button
+        type="button"
+        class="text-ink hover:bg-surface-2 inline-grid size-11 place-items-center rounded-full lg:hidden"
+        popovertarget="mobile-menu"
+        aria-controls="mobile-menu"
+      >
+        <Icon name="menu" size={24} />
+        <span class="sr-only">Ouvrir le menu</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="mobile-menu" popover class="mobile-menu lg:hidden" aria-label="Menu">
+    <div class="mb-4 flex items-center justify-between">
+      <p class="font-display text-xl font-semibold">Menu</p>
+      <button
+        type="button"
+        class="hover:bg-surface-2 inline-grid size-11 place-items-center rounded-full"
+        popovertarget="mobile-menu"
+        popovertargetaction="hide"
+      >
+        <Icon name="close" size={24} />
+        <span class="sr-only">Fermer le menu</span>
+      </button>
+    </div>
+    <nav aria-label="Navigation mobile">
+      <ul class="flex flex-col gap-1">
+        {links.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              class="hover:bg-surface-2 aria-[current=page]:text-primary block rounded-xl px-3 py-3 text-lg font-semibold"
+              aria-current={isCurrent(link) ? "page" : undefined}
+              data-close-menu
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <a
+        href={SITE.joinForm}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-primary mt-5 w-full"
+        data-close-menu
+      >
+        Rejoins-nous
+        <Icon name="external" size={18} />
+        <span class="sr-only">(nouvel onglet)</span>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .nav-link {
+    position: relative;
+    display: inline-flex;
+    padding: 0.5rem 0.8rem;
+    border-radius: 999px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: var(--text);
+    transition:
+      color 0.2s,
+      background-color 0.2s;
+  }
+  .nav-link:hover {
+    background: var(--surface-2);
+  }
+  .nav-link[aria-current="page"] {
+    color: var(--primary);
+    font-weight: 650;
+  }
+  .nav-link[aria-current="page"]::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0.8rem;
+    inset-block-end: 0.2rem;
+    block-size: 2px;
+    border-radius: 2px;
+    background: var(--accent);
+  }
+  /* The logo has dark-green lettering: give it a light pill in dark mode. */
+  :global([data-theme="dark"]) .logo-link {
+    background: oklch(97% 0.01 90);
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(html:not([data-theme])) .logo-link {
+      background: oklch(97% 0.01 90);
+    }
+  }
+</style>
+
+<script>
+  // Close the popover menu when a link inside it is followed (incl. same-page anchors).
+  function bindMenu(): void {
+    const menu = document.getElementById("mobile-menu");
+    if (!menu || menu.dataset["bound"]) return;
+    menu.dataset["bound"] = "true";
+    menu.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement | null;
+      if (
+        target?.closest("[data-close-menu]") &&
+        menu.matches(":popover-open")
+      ) {
+        menu.hidePopover();
+      }
+    });
+  }
+  document.addEventListener("astro:page-load", bindMenu);
+</script>

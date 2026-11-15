@@ -1,0 +1,116 @@
+---
+import { Image } from "astro:assets";
+import epflLogo from "../assets/brand/epfl-logo.png";
+import { SITE } from "../lib/site";
+import { url } from "../lib/url";
+import Icon from "./Icon.astro";
+---
+
+<footer
+  class="bg-bg-soft border-line mt-24 border-t"
+  transition:name="site-footer"
+>
+  <div class="container-page grid gap-10 py-12 md:grid-cols-[1.4fr_1fr_1fr] md:items-start">
+    <div class="space-y-4">
+      <p class="font-display text-2xl font-semibold">{SITE.name}</p>
+      <p class="text-muted max-w-sm text-sm">
+        Association des étudiants algériens en Suisse.
+      </p>
+      <a
+        href={SITE.epfl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex rounded-lg bg-white p-2 ring-1 ring-black/5"
+      >
+        <Image
+          src={epflLogo}
+          alt="EPFL (nouvel onglet)"
+          width={96}
+          densities={[1, 2]}
+        />
+      </a>
+    </div>
+
+    <nav aria-label="Pied de page">
+      <p class="text-muted mb-3 text-xs font-semibold tracking-[0.12em] uppercase">
+        Navigation
+      </p>
+      <ul class="space-y-2 text-sm">
+        <li>
+          <a
+            class="hover:text-primary underline-offset-4 hover:underline"
+            href={url()}
+          >
+            Accueil
+          </a>
+        </li>
+        <li>
+          <a
+            class="hover:text-primary underline-offset-4 hover:underline"
+            href={url("#quisommesnous")}
+          >
+            Qui sommes-nous ?
+          </a>
+        </li>
+        <li>
+          <a
+            class="hover:text-primary underline-offset-4 hover:underline"
+            href={url("evenements/")}
+          >
+            Événements
+          </a>
+        </li>
+        <li>
+          <a
+            class="hover:text-primary underline-offset-4 hover:underline"
+            href={url("#contact")}
+          >
+            Nous contacter
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div>
+      <p class="text-muted mb-3 text-xs font-semibold tracking-[0.12em] uppercase">
+        Suivre DZAÏR
+      </p>
+      <ul class="flex gap-2">
+        <li>
+          <a
+            href={SITE.instagram}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="border-line bg-surface hover:border-primary hover:text-primary inline-grid size-11 place-items-center rounded-full border transition-colors"
+          >
+            <Icon name="instagram" label="Instagram de DZAÏR (nouvel onglet)" />
+          </a>
+        </li>
+        <li>
+          <a
+            href={`mailto:${SITE.email}`}
+            class="border-line bg-surface hover:border-primary hover:text-primary inline-grid size-11 place-items-center rounded-full border transition-colors"
+          >
+            <Icon name="mail" label={`Écrire à ${SITE.email}`} />
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="border-line border-t">
+    <p class="container-page text-muted flex flex-wrap gap-x-3 gap-y-1 py-5 text-xs">
+      <span>
+        © 2025–2026 DZAIR – Association des étudiants algériens en Suisse.
+      </span>
+      <span aria-hidden="true" class="opacity-50">
+        |
+      </span>
+      <span>Une association reconnue par l’EPFL</span>
+      <span aria-hidden="true" class="opacity-50">
+        |
+      </span>
+      <span>Site associatif sans but lucratif.</span>
+    </p>
+  </div>
+</footer>

@@ -1,0 +1,139 @@
+---
+import Icon from "./Icon.astro";
+---
+
+<dialog
+  id="lightbox"
+  class="lightbox m-auto"
+  aria-labelledby="lightbox-caption"
+>
+  <figure class="relative m-0">
+    <img id="lightbox-img" alt="" decoding="async" />
+    <figcaption
+      id="lightbox-caption"
+      class="flex min-h-16 items-center gap-3 px-5 py-3 pe-40 text-sm font-semibold sm:text-base"
+    ></figcaption>
+  </figure>
+  <div class="absolute end-3 bottom-3 flex gap-2">
+    <button type="button" class="lightbox-btn" data-lightbox-prev>
+      <Icon name="arrow-left" />
+      <span class="sr-only">Photo précédente</span>
+    </button>
+    <button type="button" class="lightbox-btn" data-lightbox-next>
+      <Icon name="arrow-right" />
+      <span class="sr-only">Photo suivante</span>
+    </button>
+    <form method="dialog">
+      <button type="submit" class="lightbox-btn" data-lightbox-close autofocus>
+        <Icon name="close" />
+        <span class="sr-only">Fermer</span>
+      </button>
+    </form>
+  </div>
+</dialog>
+
+<style>
+  .lightbox-btn {
+    display: inline-grid;
+    place-items: center;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition:
+      background-color 0.2s,
+      border-color 0.2s;
+  }
+  .lightbox-btn:hover {
+    border-color: var(--primary);
+    background: var(--surface-2);
+  }
+</style>
+
+<script>
+  // Listeners are attached once to `document` (event delegation) so they keep
+  // working across Astro view-transition navigations, which replace the <dialog>.
+  let opener: HTMLAnchorElement | null = null;
+
+  const getDialog = (): HTMLDialogElement | null =>
+    document.getElementById("lightbox") as HTMLDialogElement | null;
+
+  const visibleTriggers = (): HTMLAnchorElement[] =>
+    Array.from(
+      document.querySelectorAll<HTMLAnchorElement>("a[data-lightbox]"),
+    ).filter((el) => el.getClientRects().length > 0);
+
+  function show(trigger: HTMLAnchorElement): void {
+    const dialog = getDialog();
+    const img = dialog?.querySelector<HTMLImageElement>("#lightbox-img");
+    const caption = dialog?.querySelector("#lightbox-caption");
+    if (!dialog || !img || !caption) return;
+
+    opener = trigger;
+    img.src = trigger.href;
+    img.alt = trigger.dataset["lightboxAlt"] ?? "";
+    caption.textContent = trigger.dataset["lightboxCaption"] ?? "";
+    const many = visibleTriggers().length > 1;
+    dialog
+      .querySelectorAll<HTMLButtonElement>(
+        "[data-lightbox-prev], [data-lightbox-next]",
+      )
+      .forEach((button) => {
+        button.hidden = !many;
+      });
+    if (!dialog.open) dialog.showModal();
+  }
+
+  function step(delta: number): void {
+    const list = visibleTriggers();
+    if (!opener || list.length === 0) return;
+    const index = list.indexOf(opener);
+    const next = list[(index + delta + list.length) % list.length];
+    if (next) show(next);
+  }
+
+  document.addEventListener("click", (event) => {
+    const target = event.target as Element | null;
+    if (!target) return;
+    const dialog = getDialog();
+
+    // Prev / next buttons
+    if (target.closest("[data-lightbox-prev]")) return step(-1);
+    if (target.closest("[data-lightbox-next]")) return step(1);
+
+    // Click on the backdrop (outside the dialog content) closes it.
+    if (dialog?.open && target === dialog) return dialog.close();
+
+    // Open from a card link (plain left click only; modified clicks open the file).
+    if (event.defaultPrevented || event.button !== 0) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+      return;
+    const trigger = target.closest<HTMLAnchorElement>("a[data-lightbox]");
+    if (!trigger) return;
+    event.preventDefault();
+    show(trigger);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (!getDialog()?.open) return;
+    if (event.key === "ArrowLeft") step(-1);
+    if (event.key === "ArrowRight") step(1);
+  });
+
+  function bindClose(): void {
+    const dialog = getDialog();
+    if (!dialog || dialog.dataset["bound"]) return;
+    dialog.dataset["bound"] = "true";
+    dialog.addEventListener("close", () => {
+      dialog.querySelector("#lightbox-img")?.removeAttribute("src");
+      // Return focus to the card that opened the lightbox.
+      opener?.focus();
+      opener = null;
+    });
+  }
+
+  document.addEventListener("astro:page-load", bindClose);
+</script>

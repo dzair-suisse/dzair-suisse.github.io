@@ -1,0 +1,87 @@
+---
+import Icon from "./Icon.astro";
+
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<button
+  type="button"
+  class:list={[
+    "theme-toggle text-ink hover:bg-surface-2 inline-grid size-11 place-items-center rounded-full transition-colors",
+    className,
+  ]}
+  data-theme-toggle
+  aria-pressed="false"
+  title="Changer de thème"
+>
+  <span class="sr-only">Mode sombre</span>
+  <span class="theme-icon-sun">
+    <Icon name="sun" />
+  </span>
+  <span class="theme-icon-moon">
+    <Icon name="moon" />
+  </span>
+</button>
+
+<style>
+  .theme-icon-sun {
+    display: none;
+  }
+  :global([data-theme="dark"]) .theme-icon-sun {
+    display: block;
+  }
+  :global([data-theme="dark"]) .theme-icon-moon {
+    display: none;
+  }
+  /* Hidden until JS has run: the toggle cannot work without it. */
+  :global(html:not([data-theme])) .theme-toggle {
+    display: none;
+  }
+</style>
+
+<script>
+  type Theme = "light" | "dark";
+
+  function current(): Theme {
+    return document.documentElement.dataset["theme"] === "dark"
+      ? "dark"
+      : "light";
+  }
+
+  function sync(): void {
+    const dark = current() === "dark";
+    document
+      .querySelectorAll<HTMLButtonElement>("[data-theme-toggle]")
+      .forEach((btn) => {
+        btn.setAttribute("aria-pressed", String(dark));
+      });
+  }
+
+  function setTheme(theme: Theme): void {
+    document.documentElement.dataset["theme"] = theme;
+    try {
+      localStorage.setItem("theme", theme);
+    } catch {
+      /* storage unavailable (private mode, blocked cookies…) */
+    }
+    sync();
+  }
+
+  function init(): void {
+    document
+      .querySelectorAll<HTMLButtonElement>("[data-theme-toggle]")
+      .forEach((btn) => {
+        if (btn.dataset["bound"]) return;
+        btn.dataset["bound"] = "true";
+        btn.addEventListener("click", () =>
+          setTheme(current() === "dark" ? "light" : "dark"),
+        );
+      });
+    sync();
+  }
+
+  document.addEventListener("astro:page-load", init);
+</script>
