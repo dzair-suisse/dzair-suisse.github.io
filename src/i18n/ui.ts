@@ -41,6 +41,8 @@ const fr = {
     bannerText: "Ce site existe aussi en français.",
     bannerAction: "Afficher en français",
     bannerDismiss: "Masquer ce message",
+    /** Accessible name of the banner landmark. */
+    bannerLabel: "Choix de la langue",
   },
   theme: {
     label: "Mode sombre",
@@ -157,6 +159,7 @@ const en: UIStrings = {
     bannerText: "This site is also available in English.",
     bannerAction: "Switch to English",
     bannerDismiss: "Dismiss this message",
+    bannerLabel: "Language choice",
   },
   theme: {
     label: "Dark mode",
