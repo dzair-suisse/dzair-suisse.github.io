@@ -49,7 +49,12 @@ Lint + commitlint, `astro check`, Vitest, `npm audit`, build + html-validate + l
 
 Free address `https://dzair-suisse.github.io`, set only in `src/lib/origin.ts`. Moving to `dzair-suisse.ch` (paid, once the association buys it): follow « Nom de domaine » in the README.
 
+## Site features (in place)
+
+- Home: key figures computed from the event files, three-step « Rejoindre », photo ribbon, discreet zellige (eight-point stars, inspired by the 14th-century Zianid zellige of Tlemcen; the Casbah of Algiers is painted faience, not zellige — never call the pattern « Casbah »).
+- One page per event (`src/pages/evenements/[id].astro`, `src/pages/en/events/[id].astro`, `src/components/pages/EventPage.astro`): Event JSON-LD, event photo as social preview, share button, newer/older links.
+- The user wants a professional, restrained look: no flashy effects.
+
 ## Pending
 
-- PR #10 (draft): sober design proposal (key figures, photo ribbon, discreet zellige). Do not merge until the user approves. Keep the site professional and restrained.
 - Manual: GitHub → Settings → Branches → block force-pushes on `main` (do not require PRs: the Instagram sync pushes to `main`).
