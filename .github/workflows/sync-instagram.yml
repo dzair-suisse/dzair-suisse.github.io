@@ -66,6 +66,14 @@ jobs:
           npm run check
           npm run build
 
+      # On ne commite que si les tests passent sur le nouveau contenu.
+      - name: Tests unitaires et E2E (Chromium)
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          npm run test:unit
+          npx playwright install --with-deps chromium
+          npx playwright test --project=chromium
+
       - name: Commit et déploiement
         if: steps.diff.outputs.changed == 'true'
         env:
