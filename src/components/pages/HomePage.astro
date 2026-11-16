@@ -65,7 +65,7 @@ const organization = {
   logo: absoluteUrl("icon-512.png", Astro.site),
   email: SITE.email,
   description: t.site.description,
-  sameAs: [SITE.instagram],
+  sameAs: [SITE.instagram, SITE.linkedin],
 };
 
 const webPage = {
@@ -316,6 +316,17 @@ const webPage = {
             <Icon name="instagram" size={20} />
             @dzair_suisse
             <span class="sr-only">{t.home.onInstagram}</span>
+            <Icon name="external" size={16} />
+          </a>
+          <a
+            href={SITE.linkedin}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn border-[1.5px] border-white/50 text-white hover:bg-white/10"
+          >
+            <Icon name="linkedin" size={20} />
+            LinkedIn
+            <span class="sr-only">{t.a11y.newTab}</span>
             <Icon name="external" size={16} />
           </a>
           <a

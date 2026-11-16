@@ -122,6 +122,7 @@ const fr = {
     epfl: "EPFL (nouvel onglet)",
     unil: "Université de Lausanne (nouvel onglet)",
     instagram: "Instagram de DZAÏR (nouvel onglet)",
+    linkedin: "LinkedIn de DZAÏR (nouvel onglet)",
     email: (email: string): string => `Écrire à ${email}`,
     copyright:
       "© 2025–2026 DZAÏR – Association des étudiants algériens en Suisse.",
@@ -246,6 +247,7 @@ const en: UIStrings = {
     epfl: "EPFL (opens in a new tab)",
     unil: "University of Lausanne (opens in a new tab)",
     instagram: "DZAÏR on Instagram (opens in a new tab)",
+    linkedin: "DZAÏR on LinkedIn (opens in a new tab)",
     email: (email) => `Email ${email}`,
     copyright:
       "© 2025–2026 DZAÏR – Association of Algerian Students in Switzerland.",

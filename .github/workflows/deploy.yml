@@ -88,6 +88,14 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - name: Validate HTML
+        run: npm run validate:html
+      - name: Check internal links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          # The 404 page links to its own (FR/EN) address on purpose.
+          args: --offline --no-progress --root-dir "${{ github.workspace }}/dist" --exclude-path dist/404.html 'dist/**/*.html'
+          fail: true
       - uses: actions/upload-artifact@v4
         with:
           name: dist
@@ -102,7 +110,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [chromium, mobile]
+        include:
+          - { project: chromium, browser: chromium }
+          - { project: mobile, browser: chromium }
+          - { project: firefox, browser: firefox }
+          - { project: webkit, browser: webkit }
+          - { project: mobile-safari, browser: webkit }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -122,13 +135,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+          key: playwright-${{ runner.os }}-${{ matrix.browser }}-${{ steps.playwright.outputs.version }}
       - name: Install Playwright browser
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps ${{ matrix.browser }}
       - name: Install Playwright system dependencies
         if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
+        run: npx playwright install-deps ${{ matrix.browser }}
       - run: npx playwright test --project=${{ matrix.project }}
       - uses: actions/upload-artifact@v4
         if: failure()
@@ -136,6 +149,23 @@ jobs:
           name: playwright-report-${{ matrix.project }}
           path: playwright-report/
           retention-days: 7
+
+  lighthouse:
+    name: Lighthouse
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: ./lighthouserc.json
+          uploadArtifacts: true
+          temporaryPublicStorage: false
 
   pages-artifact:
     name: Pages artifact
@@ -155,7 +185,7 @@ jobs:
   deploy:
     name: Deploy
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: [lint, typecheck, unit, audit, e2e, pages-artifact]
+    needs: [lint, typecheck, unit, audit, e2e, lighthouse, pages-artifact]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # Never cancel a Pages deployment half-way.

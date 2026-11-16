@@ -5,6 +5,7 @@ export const SITE = {
   legalName: "DZAIR – Association des étudiants algériens en Suisse",
   email: "dzairassociation@epfl.ch",
   instagram: "https://www.instagram.com/dzair_suisse/",
+  linkedin: "https://www.linkedin.com/company/dzair-ch/",
   joinForm:
     "https://docs.google.com/forms/d/e/1FAIpQLSdeZDe7HzFiykEniiz7zmaKlktJakwYzi3iFuHTpvT_-iPmpQ/viewform?usp=header",
   epfl: "https://www.epfl.ch",
