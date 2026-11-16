@@ -278,3 +278,13 @@
   category: epfl-unil
   en:
     title: Global Village 2023
+
+- id: semaine-du-monde-2026
+  title: Semaine du monde 2026
+  # Stand de l’association (plats algériens), mars 2026.
+  date: 2026-03-01
+  location: EPFL
+  campus: EPFL
+  category: epfl-unil
+  en:
+    title: World Week 2026
