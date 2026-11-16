@@ -11,6 +11,9 @@ playwright-report/
 blob-report/
 playwright/.cache/
 
+# exports Instagram (données personnelles, ne jamais commiter)
+instagram-*.zip
+
 # logs & env
 npm-debug.log*
 .env

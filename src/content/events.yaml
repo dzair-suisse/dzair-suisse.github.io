@@ -49,7 +49,27 @@
   fit: contain
   alt: Affiche festive « Viva Poly » de DZAÏR au Rolex Learning Center, entourée de photos de plats algériens.
 
+- id: semaine-associations-2024
+  title: Semaine des associations 2024
+  date: 2024-09-01
+  location: EPFL
+  campus: EPFL
+  category: epfl-unil
+  image: ../assets/events/semaine-associations-2024.jpg
+  fit: contain
+  alt: Affiche verte « Semaine des associations » invitant à déguster des saveurs algériennes, avec pizza carrée, cigares, un pot de pâte à tartiner El Mordjene et une boisson Hamoud.
+
 # --- Networking & Partages ---
+- id: networking-alumni-2026
+  title: Soirée networking avec des alumni de l’EPFL et de l’ETHZ
+  date: 2026-04-01
+  location: EPFL
+  campus: EPFL
+  category: networking
+  image: ../assets/events/networking-alumni-2026.jpg
+  fit: contain
+  alt: Affiche illustrée « Networking Event », le 23 avril 2026 à 19 h en salle ELA1, pour échanger avec des alumni et professeurs de l’EPFL et de l’ETH Zurich, suivi d’un apéro.
+
 - id: entraide-post-epfl-2025
   title: Soirée entraide Post-EPFL
   date: 2025-05-01
@@ -91,6 +111,26 @@
   alt: Affiche « APML x DZAIR Game Apéro » illustrée de cartes à jouer, de dés, de jetons et d’un ballon de football.
 
 # --- Célébrations & Sorties ---
+- id: randonnee-lac-de-taney-2026
+  title: Randonnée au lac de Taney
+  date: 2026-05-01
+  location: Lac de Taney, Valais
+  campus: Hors campus
+  category: celebrations
+  image: ../assets/events/randonnee-lac-de-taney-2026.jpg
+  fit: cover
+  alt: Groupe d’étudiants posant au bord du lac de Taney, entouré de montagnes et de forêts sous un ciel ensoleillé.
+
+- id: randonnee-bretaye-2026
+  title: Randonnée à Bretaye
+  date: 2026-04-01
+  location: Bretaye, Vaud
+  campus: Hors campus
+  category: celebrations
+  image: ../assets/events/randonnee-bretaye-2026.jpg
+  fit: cover
+  alt: Groupe d’étudiants souriants derrière un mur de neige, devant des sapins sous un ciel bleu, lors d’une randonnée à Bretaye.
+
 - id: celebration-1er-novembre-2025
   title: Célébration du 1er novembre
   date: 2025-11-01
@@ -120,6 +160,16 @@
   image: ../assets/events/randonnee-crans-montana-2025.jpeg
   fit: cover
   alt: Étudiants assis dans l’herbe pour une pause pique-nique, face à des montagnes boisées sous un ciel nuageux.
+
+- id: randonnee-oeschinensee-2024
+  title: Randonnée à l’Oeschinensee
+  date: 2024-11-01
+  location: Oeschinensee, Berne
+  campus: Hors campus
+  category: celebrations
+  image: ../assets/events/randonnee-oeschinensee-2024.jpg
+  fit: cover
+  alt: Groupe d’étudiants assis et debout au bord de l’Oeschinensee, un lac turquoise entouré de falaises et de sapins.
 
 - id: ftour-ramadan-2025
   title: Ftour convivial Ramadan 2025
