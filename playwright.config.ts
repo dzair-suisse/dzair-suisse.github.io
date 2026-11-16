@@ -24,7 +24,7 @@ export default defineConfig({
   webServer: {
     // Serves the production build (run `npm run build` first).
     command: `npm run preview -- --port ${PORT}`,
-    url: `http://localhost:${PORT}/dzair_epfl/`,
+    url: `http://localhost:${PORT}/`,
     reuseExistingServer: !process.env["CI"],
     timeout: 120_000,
   },

@@ -1,7 +1,7 @@
 # DZAÏR – Étudiants algériens en Suisse
 
 Site de **DZAÏR**, l’association des étudiants algériens en Suisse (EPFL / UNIL).
-En ligne : <https://adessrrrr.github.io/dzair_epfl/>
+En ligne : <https://dzair-suisse.github.io/>
 
 ## Stack
 
@@ -22,16 +22,16 @@ Node.js 22 (voir `.nvmrc`, ≥ 22.12) et npm.
 
 ## Commandes
 
-| Commande               | Action                                                         |
-| ---------------------- | -------------------------------------------------------------- |
-| `npm ci`               | Installe les dépendances                                       |
-| `npm run dev`          | Serveur de développement : <http://localhost:4321/dzair_epfl/> |
-| `npm run build`        | Génère le site dans `dist/`                                    |
-| `npm run preview`      | Sert le build localement                                       |
-| `npm run check`        | Vérification TypeScript / Astro (`astro check`)                |
-| `npm run format`       | Formate le code (Prettier)                                     |
-| `npm run format:check` | Vérifie le formatage                                           |
-| `npm test`             | Tests Playwright (lancer `npm run build` avant)                |
+| Commande               | Action                                              |
+| ---------------------- | --------------------------------------------------- |
+| `npm ci`               | Installe les dépendances                            |
+| `npm run dev`          | Serveur de développement : <http://localhost:4321/> |
+| `npm run build`        | Génère le site dans `dist/`                         |
+| `npm run preview`      | Sert le build localement                            |
+| `npm run check`        | Vérification TypeScript / Astro (`astro check`)     |
+| `npm run format`       | Formate le code (Prettier)                          |
+| `npm run format:check` | Vérifie le formatage                                |
+| `npm test`             | Tests Playwright (lancer `npm run build` avant)     |
 
 Première utilisation des tests : `npx playwright install chromium`.
 
@@ -109,7 +109,7 @@ rediriger les appels.
 
 ## Liens internes
 
-Le site est servi sous `/dzair_epfl/`. Pour tout lien interne ou fichier de `public/`, utiliser
+Le site est servi à la racine. Pour tout lien interne ou fichier de `public/`, utiliser
 `url()` de `src/lib/url.ts` (par ex. `url("evenements/")`), jamais un chemin commençant par `/`.
 
 ## Déploiement
@@ -122,7 +122,7 @@ puis déploie `dist/` sur GitHub Pages à chaque push sur `main`.
 
 ### Référencement
 
-Le site est un « project site » servi sous `/dzair_epfl/` : un `robots.txt` n’y serait jamais lu
-(les robots ne consultent que celui de la racine du domaine). Pour aider l’indexation, soumettre
-le plan du site `https://adessrrrr.github.io/dzair_epfl/sitemap-index.xml` dans
+Le site est servi à la racine de `https://dzair-suisse.github.io/` : `public/robots.txt` indique le
+plan du site aux robots. Pour accélérer l’indexation, soumettre
+`https://dzair-suisse.github.io/sitemap-index.xml` dans
 [Google Search Console](https://search.google.com/search-console) (propriété « préfixe d’URL »).

@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import YAML from "yaml";
 
-const BASE = "/dzair_epfl/";
+const BASE = "/";
 
 /** Event counts read from the content files, so adding an event never breaks the tests. */
 const EVENTS = [
@@ -122,7 +122,7 @@ test.describe("Navigation", () => {
         .click();
     }
 
-    await expect(page).toHaveURL(/\/dzair_epfl\/evenements\/?$/);
+    await expect(page).toHaveURL(/\/evenements\/?$/);
     await expect(
       page.getByRole("heading", { level: 1, name: "Nos événements" }),
     ).toBeVisible();
@@ -131,7 +131,7 @@ test.describe("Navigation", () => {
       .getByRole("link", { name: /accueil/i })
       .first()
       .click();
-    await expect(page).toHaveURL(/\/dzair_epfl\/?$/);
+    await expect(page).toHaveURL(/:\d+\/$/);
     expect(errors).toEqual([]);
   });
 

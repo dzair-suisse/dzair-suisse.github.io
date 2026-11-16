@@ -6,8 +6,8 @@ import pruneUnusedAssets from "./src/integrations/prune-unused-assets.ts";
 
 // https://docs.astro.build/en/reference/configuration-reference/
 export default defineConfig({
-  site: "https://adessrrrr.github.io",
-  base: "/dzair_epfl",
+  // Site d’organisation GitHub Pages : servi à la racine du domaine.
+  site: "https://dzair-suisse.github.io",
   trailingSlash: "ignore",
   build: {
     format: "directory",
