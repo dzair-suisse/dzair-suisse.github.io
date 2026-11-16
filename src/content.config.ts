@@ -4,38 +4,46 @@ import { z } from "astro/zod";
 import { CATEGORIES } from "./lib/categories";
 
 const eventSchema = ({ image }: SchemaContext) =>
-  z.object({
-    title: z.string().min(1),
-    /** Premier jour du mois de l’événement (seuls le mois et l'année sont affichés). */
-    date: z.coerce.date(),
-    /** Lieu affiché, p. ex. « EPFL » ou « Stanserhorn, Nidwald ». */
-    location: z.string().min(1),
-    /** Rattachement : campus EPFL, UNIL ou sortie hors campus. */
-    campus: z.enum(["EPFL", "UNIL", "Hors campus"]),
-    category: z.enum(CATEGORIES),
-    image: image(),
-    /**
-     * Cadrage dans la carte : `contain` montre l’affiche en entier (sur un
-     * fond teinté), `cover` remplit la vignette (photos).
-     */
-    fit: z.enum(["contain", "cover"]).default("cover"),
-    /** Texte alternatif descriptif (en français). */
-    alt: z.string().min(10),
-    /**
-     * Version anglaise (facultative). Sans elle, la version anglaise du site
-     * affiche les textes français.
-     */
-    en: z
-      .object({
-        title: z.string().min(1),
-        /** Seulement si le lieu s’écrit autrement en anglais (« Berne » → « Bern »). */
-        location: z.string().min(1).optional(),
-        alt: z.string().min(10),
-      })
-      .optional(),
-    /** Lien vers le post Instagram d’origine (événements synchronisés). */
-    permalink: z.url().optional(),
-  });
+  z
+    .object({
+      title: z.string().min(1),
+      /** Premier jour du mois de l’événement (seuls le mois et l'année sont affichés). */
+      date: z.coerce.date(),
+      /** Lieu affiché, p. ex. « EPFL » ou « Stanserhorn, Nidwald ». */
+      location: z.string().min(1),
+      /** Rattachement : campus EPFL, UNIL ou sortie hors campus. */
+      campus: z.enum(["EPFL", "UNIL", "Hors campus"]),
+      category: z.enum(CATEGORIES),
+      /**
+       * Photo ou affiche (facultative : sans elle, une vignette aux couleurs de
+       * DZAÏR s’affiche, p. ex. pour les événements connus par les archives).
+       */
+      image: image().optional(),
+      /**
+       * Cadrage dans la carte : `contain` montre l’affiche en entier (sur un
+       * fond teinté), `cover` remplit la vignette (photos).
+       */
+      fit: z.enum(["contain", "cover"]).default("cover"),
+      /** Texte alternatif descriptif (en français), obligatoire avec une image. */
+      alt: z.string().min(10).optional(),
+      /**
+       * Version anglaise (facultative). Sans elle, la version anglaise du site
+       * affiche les textes français.
+       */
+      en: z
+        .object({
+          title: z.string().min(1),
+          /** Seulement si le lieu s’écrit autrement en anglais (« Berne » → « Bern »). */
+          location: z.string().min(1).optional(),
+          alt: z.string().min(10).optional(),
+        })
+        .optional(),
+      /** Lien vers le post Instagram d’origine (événements synchronisés). */
+      permalink: z.url().optional(),
+    })
+    .refine((e) => !e.image || (e.alt && (!e.en || e.en.alt)), {
+      message: "Une image demande un texte alternatif (alt, et en.alt si en).",
+    });
 
 /** Événements saisis à la main. */
 const events = defineCollection({

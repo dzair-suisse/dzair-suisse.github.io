@@ -1,5 +1,6 @@
 ---
 import { getImage, Picture } from "astro:assets";
+import EventPlaceholder from "../EventPlaceholder.astro";
 import Icon from "../Icon.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { CONTENT_LANG } from "../../i18n/routes";
@@ -27,15 +28,24 @@ const eventsUrl = url(localizedPath("evenements/", lang));
 const categoryUrl = `${eventsUrl}?categorie=${category}`;
 const description = t.event.description(title, when, location);
 
-// Social preview (WhatsApp, LinkedIn…): the event photo itself, as JPEG.
-const social = await getImage({
-  src: image,
-  width: Math.min(1200, image.width),
-  format: "jpeg",
-});
-const socialHeight = Math.round(
-  (image.height * Math.min(1200, image.width)) / image.width,
-);
+// Social preview (WhatsApp, LinkedIn…): the event photo itself, as JPEG;
+// the site image for events without a photo.
+const social = image
+  ? {
+      src: (
+        await getImage({
+          src: image,
+          width: Math.min(1200, image.width),
+          format: "jpeg",
+        })
+      ).src,
+      width: Math.min(1200, image.width),
+      height: Math.round(
+        (image.height * Math.min(1200, image.width)) / image.width,
+      ),
+      alt,
+    }
+  : undefined;
 
 const neighbours = [
   { entry: newer, label: t.event.newer, icon: "arrow-left" as const },
@@ -67,7 +77,7 @@ const eventLd = {
   startDate: isoMonth(date),
   eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
   location: { "@type": "Place", name: location },
-  image: [absoluteUrl(social.src, Astro.site)],
+  ...(social ? { image: [absoluteUrl(social.src, Astro.site)] } : {}),
   organizer,
   inLanguage: CONTENT_LANG[lang],
   url: absoluteUrl(path, Astro.site),
@@ -94,10 +104,10 @@ const breadcrumbLd = {
   title={title}
   description={description}
   path={path}
-  image={social.src}
-  imageAlt={alt}
-  imageWidth={Math.min(1200, image.width)}
-  imageHeight={socialHeight}
+  image={social?.src}
+  imageAlt={social?.alt}
+  imageWidth={social?.width}
+  imageHeight={social?.height}
   ogType="article"
   jsonLd={[eventLd, breadcrumbLd]}
 >
@@ -124,21 +134,32 @@ const breadcrumbLd = {
 
     <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-14">
       <figure class="event-photo card overflow-hidden p-0" data-fit={fit}>
-        <Picture
-          src={image}
-          alt={alt}
-          formats={["avif"]}
-          fallbackFormat="webp"
-          widths={[480, 720, 960, 1280]}
-          sizes="(min-width: 64rem) 38rem, 92vw"
-          loading="eager"
-          fetchpriority="high"
-          class:list={[
-            "size-full",
-            fit === "contain" ? "object-contain" : "object-cover",
-          ]}
-          transition:name={`event-${event.id}`}
-        />
+        {image && alt ? (
+          <Picture
+            src={image}
+            alt={alt}
+            formats={["avif"]}
+            fallbackFormat="webp"
+            widths={[480, 720, 960, 1280]}
+            sizes="(min-width: 64rem) 38rem, 92vw"
+            loading="eager"
+            fetchpriority="high"
+            class:list={[
+              "size-full",
+              fit === "contain" ? "object-contain" : "object-cover",
+            ]}
+            transition:name={`event-${event.id}`}
+          />
+        ) : (
+          <div class="size-full" transition:name={`event-${event.id}`}>
+            <EventPlaceholder
+              id={`page-${event.id}`}
+              category={category}
+              date={date}
+              monthLabel={when}
+            />
+          </div>
+        )}
       </figure>
 
       <div class="lg:sticky lg:top-28">

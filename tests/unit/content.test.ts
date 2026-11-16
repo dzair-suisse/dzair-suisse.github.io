@@ -67,13 +67,14 @@ describe("events", () => {
       expect(date.getUTCFullYear()).toBeLessThanOrEqual(MAX_YEAR);
     });
 
-    it("has an existing image", () => {
+    // Events from the archives may have no photo (a branded tile is shown).
+    it.runIf(event.image !== undefined)("has an existing image", () => {
       expect(typeof event.image).toBe("string");
       const image = path.join(CONTENT, String(event.image));
       expect(existsSync(image), image).toBe(true);
     });
 
-    it("has a descriptive alt text", () => {
+    it.runIf(event.image !== undefined)("has a descriptive alt text", () => {
       const alt = String(event.alt ?? "");
       expect(alt.length).toBeGreaterThanOrEqual(10);
       expect(alt.length).toBeLessThanOrEqual(400);
@@ -83,6 +84,7 @@ describe("events", () => {
       if (file === "events.yaml") expect(event.en).toBeDefined();
       if (event.en === undefined) return;
       expect(String(event.en.title ?? "").trim()).not.toBe("");
+      if (event.image === undefined) return;
       const alt = String(event.en.alt ?? "");
       expect(alt.length).toBeGreaterThanOrEqual(10);
       expect(alt.length).toBeLessThanOrEqual(400);

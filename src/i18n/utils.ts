@@ -20,7 +20,7 @@ export function getLangFromUrl(url: URL): Lang {
 export function localizeEvent(
   event: EventEntry,
   lang: Lang,
-): { title: string; location: string; alt: string } {
+): { title: string; location: string; alt: string | undefined } {
   const { title, location, alt, en } = event.data;
   if (lang === "en" && en) {
     return { title: en.title, location: en.location ?? location, alt: en.alt };
