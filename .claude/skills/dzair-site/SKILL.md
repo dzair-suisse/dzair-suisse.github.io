@@ -41,6 +41,15 @@ npm run lint && npm run check && npm run test:unit && npm run build && npm run t
 
 (`npm run ci` runs the same chain.) Don't count events in tests by hand; tests read the content files.
 
-## Not done yet (only if the user asks)
+## CI (in place)
 
-Lighthouse CI, html-validate, lychee link check, Firefox/WebKit E2E, `health.yml` uptime check, custom domain `dzair-suisse.ch`.
+Lint + commitlint, `astro check`, Vitest, `npm audit`, build + html-validate + lychee (internal links), Playwright + axe on Chromium, Android, Firefox, WebKit and iPhone (CI only; locally Chromium with 4 workers max, so the laptop stays usable), Lighthouse, and a daily `health.yml` check of the live site. Never run Firefox/WebKit or many browsers locally.
+
+## Domain
+
+Free address `https://dzair-suisse.github.io`, set only in `src/lib/origin.ts`. Moving to `dzair-suisse.ch` (paid, once the association buys it): follow « Nom de domaine » in the README.
+
+## Pending
+
+- PR #10 (draft): sober design proposal (key figures, photo ribbon, discreet zellige). Do not merge until the user approves. Keep the site professional and restrained.
+- Manual: GitHub → Settings → Branches → block force-pushes on `main` (do not require PRs: the Instagram sync pushes to `main`).
