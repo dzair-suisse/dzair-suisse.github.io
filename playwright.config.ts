@@ -8,6 +8,8 @@ export default defineConfig({
   forbidOnly: !!process.env["CI"],
   // No retries: a flaky test should fail loudly rather than pass on rerun.
   retries: 0,
+  // Keep the laptop usable: at most 4 parallel browsers locally.
+  ...(process.env["CI"] ? {} : { workers: 4 }),
   reporter: process.env["CI"]
     ? [["github"], ["list"], ["html", { open: "never" }]]
     : "list",
@@ -23,6 +25,15 @@ export default defineConfig({
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
     { name: "mobile", use: { ...devices["Pixel 7"] } },
+    // Firefox and Safari engines: CI only (too heavy for a laptop), or locally
+    // with ALL_BROWSERS=1.
+    ...(process.env["CI"] || process.env["ALL_BROWSERS"]
+      ? [
+          { name: "firefox", use: { ...devices["Desktop Firefox"] } },
+          { name: "webkit", use: { ...devices["Desktop Safari"] } },
+          { name: "mobile-safari", use: { ...devices["iPhone 15"] } },
+        ]
+      : []),
   ],
   webServer: {
     // Serves the production build (run `npm run build` first).

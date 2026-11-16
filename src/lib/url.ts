@@ -1,3 +1,5 @@
+import { SITE_ORIGIN } from "./origin";
+
 /**
  * Helpers that respect Astro's `base` (`/` today).
  * Always use them for internal links and files served from `public/`.
@@ -11,7 +13,7 @@ export function url(path = ""): string {
 
 /** Absolute URL (origin + base) for canonical / Open Graph tags. */
 export function absoluteUrl(path: string, site: URL | undefined): string {
-  return new URL(url(path), site ?? "https://dzair-suisse.github.io").href;
+  return new URL(url(path), site ?? SITE_ORIGIN).href;
 }
 
 /** Pathname without base and trailing slash, e.g. `/evenements/` → `/evenements`. */

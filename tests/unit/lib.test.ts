@@ -1,6 +1,8 @@
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { CATEGORIES } from "../../src/lib/categories";
 import { SITE, formatMonth, isoMonth, titleHtml } from "../../src/lib/site";
+import { SITE_ORIGIN } from "../../src/lib/origin";
 import { absoluteUrl, stripBase, url } from "../../src/lib/url";
 
 describe("formatMonth", () => {
@@ -48,9 +50,7 @@ describe("url helpers", () => {
   });
 
   it("builds absolute URLs", () => {
-    expect(absoluteUrl("en/", undefined)).toBe(
-      "https://dzair-suisse.github.io/en/",
-    );
+    expect(absoluteUrl("en/", undefined)).toBe(`${SITE_ORIGIN}/en/`);
     expect(absoluteUrl("x/", new URL("https://example.org"))).toBe(
       "https://example.org/x/",
     );
@@ -69,5 +69,18 @@ describe("constants", () => {
     for (const link of [SITE.instagram, SITE.joinForm, SITE.epfl, SITE.unil])
       expect(new URL(link).protocol).toBe("https:");
     expect(SITE.email).toMatch(/^[^@\s]+@[^@\s]+\.[a-z]+$/);
+  });
+});
+
+describe("site origin", () => {
+  it("matches public/CNAME (custom domain) or GitHub Pages", () => {
+    const origin = new URL(SITE_ORIGIN);
+    expect(origin.protocol).toBe("https:");
+    expect(origin.pathname).toBe("/");
+    if (existsSync("public/CNAME")) {
+      expect(readFileSync("public/CNAME", "utf8").trim()).toBe(origin.host);
+    } else {
+      expect(origin.host).toBe("dzair-suisse.github.io");
+    }
   });
 });

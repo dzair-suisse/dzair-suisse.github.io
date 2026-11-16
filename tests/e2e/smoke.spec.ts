@@ -2,6 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import YAML from "yaml";
+import { SITE_ORIGIN } from "../../src/lib/origin";
 
 const BASE = "/";
 
@@ -366,7 +367,7 @@ test.describe("Version anglaise", () => {
       await expect(page.getByRole("heading", { level: 1 })).toContainText(h1);
       await expect(page.locator("link[rel=canonical]")).toHaveAttribute(
         "href",
-        `https://dzair-suisse.github.io/${path}`,
+        `${SITE_ORIGIN}/${path}`,
       );
       for (const [lang, target] of [
         ["fr", fr],
@@ -375,7 +376,7 @@ test.describe("Version anglaise", () => {
       ] as const) {
         await expect(
           page.locator(`link[rel=alternate][hreflang="${lang}"]`),
-        ).toHaveAttribute("href", `https://dzair-suisse.github.io/${target}`);
+        ).toHaveAttribute("href", `${SITE_ORIGIN}/${target}`);
       }
       await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute(
         "content",
@@ -405,10 +406,10 @@ test.describe("Version anglaise", () => {
     await page.goto(`${BASE}evenements/`);
     await expect(
       page.locator('link[rel=alternate][hreflang="en"]'),
-    ).toHaveAttribute("href", "https://dzair-suisse.github.io/en/events/");
+    ).toHaveAttribute("href", `${SITE_ORIGIN}/en/events/`);
     await expect(
       page.locator('link[rel=alternate][hreflang="fr"]'),
-    ).toHaveAttribute("href", "https://dzair-suisse.github.io/evenements/");
+    ).toHaveAttribute("href", `${SITE_ORIGIN}/evenements/`);
   });
 
   test("les événements sont traduits, filtre et annonce compris", async ({
