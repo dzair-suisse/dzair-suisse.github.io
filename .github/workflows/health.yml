@@ -1,0 +1,39 @@
+name: Santé du site en ligne
+
+# Every morning: the live pages answer, and no link on them is broken
+# (Instagram, Google Form, EPFL, UNIL…). A failed run emails the repo admins.
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    name: Live site
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Pages answer with HTTP 200
+        run: |
+          set -eu
+          site="https://dzair-suisse.github.io"
+          for path in / /evenements/ /en/ /en/events/ /sitemap-index.xml; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --retry 3 --retry-delay 5 "$site$path")
+            echo "$code $site$path"
+            test "$code" = 200
+          done
+      - name: No broken links on the live site
+        uses: lycheeverse/lychee-action@v2
+        with:
+          # Instagram blocks automated requests: skip it instead of failing daily.
+          args: >-
+            --no-progress --max-retries 3 --accept 200,429
+            --exclude 'instagram\.com'
+            https://dzair-suisse.github.io/
+            https://dzair-suisse.github.io/evenements/
+            https://dzair-suisse.github.io/en/
+            https://dzair-suisse.github.io/en/events/
+          fail: true

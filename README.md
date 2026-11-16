@@ -141,23 +141,28 @@ Le site est servi à la racine. Pour tout lien interne ou fichier de `public/`, 
 Le workflow `.github/workflows/deploy.yml` tourne sur chaque pull request et chaque push sur `main`
 (jobs en parallèle, exécutions obsolètes d’une PR annulées) :
 
-| Job          | Vérification                                                                   | En local            |
-| ------------ | ------------------------------------------------------------------------------ | ------------------- |
-| `Lint`       | Prettier ; commitlint (Conventional Commits) sur les commits et le titre de PR | `npm run lint`      |
-| `Typecheck`  | `astro check`                                                                  | `npm run check`     |
-| `Unit tests` | Vitest : `src/lib`, `src/i18n`, helpers Instagram, validité des événements     | `npm run test:unit` |
-| `Audit`      | `npm audit --omit=dev --audit-level=high`                                      | idem                |
-| `Build`      | `astro build`, `dist/` publié comme artefact                                   | `npm run build`     |
-| `E2E (…)`    | Playwright + axe sur le build, Chromium bureau et mobile                       | `npm run test:e2e`  |
-| `Deploy`     | Déploiement GitHub Pages (push sur `main` uniquement, si tout est vert)        | —                   |
+| Job          | Vérification                                                                   | En local                                                        |
+| ------------ | ------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| `Lint`       | Prettier ; commitlint (Conventional Commits) sur les commits et le titre de PR | `npm run lint`                                                  |
+| `Typecheck`  | `astro check`                                                                  | `npm run check`                                                 |
+| `Unit tests` | Vitest : `src/lib`, `src/i18n`, helpers Instagram, validité des événements     | `npm run test:unit`                                             |
+| `Audit`      | `npm audit --omit=dev --audit-level=high`                                      | idem                                                            |
+| `Build`      | `astro build`, HTML validé (html-validate), liens internes vérifiés (lychee)   | `npm run build && npm run validate:html`                        |
+| `E2E (…)`    | Playwright + axe : Chromium, mobile Android, Firefox, WebKit, iPhone (Safari)  | `npm run test:e2e` (Chromium seul ; `ALL_BROWSERS=1` pour tout) |
+| `Lighthouse` | Accessibilité, bonnes pratiques et SEO ≥ 0,9 (performance : avertissement)     | —                                                               |
+| `Deploy`     | Déploiement GitHub Pages (push sur `main` uniquement, si tout est vert)        | —                                                               |
 
 `npm run ci` enchaîne tout en local. La synchronisation Instagram lance aussi les tests unitaires et
 E2E (Chromium) avant de commiter. Dependabot propose chaque semaine les mises à jour npm (groupées)
 et GitHub Actions ; Astro reste en 7.3.x.
 
+Le workflow `.github/workflows/health.yml` vérifie chaque matin le site **en ligne** : les pages
+répondent et aucun lien n’est cassé (Instagram exclu, il bloque les robots). En cas d’échec, GitHub
+envoie un e-mail aux administrateurs du dépôt.
+
 **Protection de branche recommandée pour `main`** (_Settings → Branches_, à activer à la main) :
-exiger une pull request ; exiger les status checks `Lint`, `Typecheck`, `Unit tests`, `Audit`,
-`Build`, `E2E (chromium)`, `E2E (mobile)` ; interdire les force-push.
+interdire les force-push et la suppression. Ne pas exiger de pull request : la synchronisation
+Instagram publie directement sur `main`.
 
 ## Déploiement
 
@@ -166,6 +171,24 @@ puis déploie `dist/` sur GitHub Pages à chaque push sur `main`.
 
 > **Important :** dans _Settings → Pages_ du dépôt, la source doit passer de
 > « Deploy from a branch » à **« GitHub Actions »**.
+
+### Nom de domaine
+
+Le site est gratuit sur `https://dzair-suisse.github.io`. Un domaine `.ch` est payant (environ
+10 à 20 CHF par an). Le jour où l’association achète `dzair-suisse.ch` :
+
+1. Dans `src/lib/origin.ts`, remplacer l’adresse par `https://dzair-suisse.ch`.
+2. Créer `public/CNAME` contenant la ligne `dzair-suisse.ch` (un test vérifie que les deux
+   correspondent), et mettre l’adresse du plan du site à jour dans `public/robots.txt`.
+3. Chez le registraire, zone DNS de `dzair-suisse.ch` :
+   - `A` → `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
+   - `AAAA` → `2606:50c0:8000::153`, `2606:50c0:8001::153`, `2606:50c0:8002::153`, `2606:50c0:8003::153`
+   - `CNAME` `www` → `dzair-suisse.github.io`
+4. Sur GitHub : _Settings → Pages → Custom domain_ : `dzair-suisse.ch`, puis cocher
+   **Enforce HTTPS** quand le certificat est prêt (quelques minutes à quelques heures).
+5. Changer l’adresse dans `.github/workflows/health.yml` et dans Google Search Console.
+
+L’ancienne adresse `dzair-suisse.github.io` redirige alors automatiquement vers le nouveau domaine.
 
 ### Référencement
 
