@@ -11,7 +11,8 @@ interface Props {
   events: EventEntry[];
 }
 
-const { events } = Astro.props;
+// Only events with a photo (archive events have none).
+const events = Astro.props.events.filter((event) => event.data.image);
 const half = Math.ceil(events.length / 2);
 const rows = [events.slice(0, half), events.slice(half)].filter(
   (row) => row.length > 0,
@@ -26,7 +27,7 @@ const rows = [events.slice(0, half), events.slice(half)].filter(
         {[...row, ...row].map((event) => (
           <li class="ribbon-item" data-fit={event.data.fit}>
             <Picture
-              src={event.data.image}
+              src={event.data.image!}
               alt=""
               formats={["avif"]}
               fallbackFormat="webp"

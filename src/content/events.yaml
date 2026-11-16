@@ -235,3 +235,46 @@
   en:
     title: Ramadan iftar 2025
     alt: DZAÏR “Ramadan Iftar Dinner” poster decorated with lanterns, stars, crescent moons and the Algerian flag.
+
+# --- Événements des archives de l’association (sans photo) ---
+# Sources : rapport d’activités 2023/2024 et documents d’organisation.
+
+- id: semaine-associations-2021
+  title: Semaine des associations 2021
+  # Dossier « 2021_2022 » des archives ; mois de la rentrée (comme chaque année).
+  date: 2021-09-01
+  location: EPFL
+  campus: EPFL
+  category: epfl-unil
+  en:
+    title: Associations Week 2021
+
+- id: vivapoly-2023
+  title: Vivapoly 2023
+  # Rolex Learning Center, 1er juin 2023.
+  date: 2023-06-01
+  location: EPFL
+  campus: EPFL
+  category: epfl-unil
+  en:
+    title: Vivapoly 2023
+
+- id: semaine-associations-2023
+  title: Semaine des associations 2023
+  # 28 septembre 2023 : stand de présentation de l’association.
+  date: 2023-09-01
+  location: EPFL
+  campus: EPFL
+  category: epfl-unil
+  en:
+    title: Associations Week 2023
+
+- id: global-village-2023
+  title: Global Village 2023
+  # 19 octobre 2023 : stand culinaire.
+  date: 2023-10-01
+  location: UNIL
+  campus: UNIL
+  category: epfl-unil
+  en:
+    title: Global Village 2023

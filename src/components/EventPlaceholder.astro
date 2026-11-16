@@ -1,0 +1,88 @@
+---
+/**
+ * Stand-in for events without a photo (older events known from the
+ * association's archives): brand green, zellige pattern, month and year.
+ * Decorative: the title, date and place are written next to it.
+ */
+import type { Category } from "../lib/categories";
+import Icon, { type IconName } from "./Icon.astro";
+import Zellige from "./Zellige.astro";
+
+interface Props {
+  id: string;
+  category: Category;
+  date: Date;
+  monthLabel: string;
+  class?: string;
+}
+
+const { id, category, date, monthLabel, class: className } = Astro.props;
+const ICON: Record<Category, IconName> = {
+  "epfl-unil": "building",
+  networking: "handshake",
+  celebrations: "sparkles",
+};
+const month = monthLabel.replace(/\s*\d{4}$/, "");
+---
+
+<div aria-hidden="true" class:list={["event-placeholder", className]}>
+  <Zellige id={`zellige-${id}`} class="placeholder-zellige" size={48} />
+  <span class="placeholder-icon">
+    <Icon name={ICON[category]} size={26} />
+  </span>
+  <span class="placeholder-date">
+    <span class="placeholder-month">{month}</span>
+    <span class="placeholder-year font-display">{date.getUTCFullYear()}</span>
+  </span>
+</div>
+
+<style>
+  .event-placeholder {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    inline-size: 100%;
+    block-size: 100%;
+    padding: clamp(1rem, 6%, 2rem);
+    overflow: hidden;
+    color: oklch(97% 0.01 90);
+    background:
+      radial-gradient(
+        120% 80% at 100% 0%,
+        oklch(52% 0.2 22 / 0.28),
+        transparent 60%
+      ),
+      linear-gradient(160deg, var(--brand-green), oklch(28% 0.055 168));
+  }
+  :global(.placeholder-zellige) {
+    z-index: -1;
+    color: white;
+    opacity: 0.09;
+  }
+  .placeholder-icon {
+    display: inline-grid;
+    place-items: center;
+    inline-size: 3rem;
+    block-size: 3rem;
+    border-radius: 1rem;
+    background: oklch(100% 0 0 / 0.12);
+  }
+  .placeholder-date {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .placeholder-month {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+  .placeholder-year {
+    font-size: clamp(2.5rem, 9cqi, 4.5rem);
+    font-weight: 600;
+    line-height: 1;
+  }
+</style>

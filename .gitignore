@@ -13,6 +13,8 @@ playwright/.cache/
 
 # exports Instagram (données personnelles, ne jamais commiter)
 instagram-*.zip
+# Exports privés (comptes, inscriptions, tickets) : jamais sur GitHub.
+Events-*.zip
 
 # logs & env
 npm-debug.log*
@@ -29,3 +31,4 @@ Thumbs.db
 
 # worktrees des agents Claude Code
 .claude/worktrees/
+Rapport des activit*

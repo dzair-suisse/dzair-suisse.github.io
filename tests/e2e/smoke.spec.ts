@@ -11,9 +11,15 @@ const EVENTS = [
   "src/content/events.yaml",
   "src/content/instagram-events.yaml",
 ].flatMap(
-  (f) => (YAML.parse(readFileSync(f, "utf8")) ?? []) as { category: string }[],
+  (f) =>
+    (YAML.parse(readFileSync(f, "utf8")) ?? []) as {
+      category: string;
+      image?: string;
+    }[],
 );
 const TOTAL = EVENTS.length;
+/** Events from the archives have no photo (a branded tile is shown instead). */
+const WITH_PHOTO = EVENTS.filter((e) => e.image).length;
 const COUNT = {
   networking: EVENTS.filter((e) => e.category === "networking").length,
   celebrations: EVENTS.filter((e) => e.category === "celebrations").length,
@@ -256,7 +262,7 @@ test.describe("Événements", () => {
     const sources = page.locator(
       "#events-list picture source[type='image/avif']",
     );
-    await expect(sources).toHaveCount(TOTAL);
+    await expect(sources).toHaveCount(WITH_PHOTO);
     expect(errors).toEqual([]);
   });
 
@@ -646,4 +652,30 @@ test("l'accueil présente les trois étapes pour nous rejoindre", async ({
     .getByRole("region", { name: "Rejoindre DZAÏR en trois étapes" })
     .getByRole("listitem");
   await expect(steps).toHaveCount(3);
+});
+
+test("un événement sans photo a une vignette et sa page", async ({ page }) => {
+  const archive = (
+    YAML.parse(readFileSync("src/content/events.yaml", "utf8")) as {
+      id: string;
+      title: string;
+      image?: string;
+    }[]
+  ).find((e) => !e.image);
+  test.skip(!archive, "no event without a photo");
+  await page.goto(`${BASE}evenements/`);
+  const card = page.locator("#events-list article", {
+    has: page.getByRole("link", { name: archive!.title, exact: true }),
+  });
+  await expect(card.locator(".event-placeholder")).toBeVisible();
+  await expect(card.locator("a[data-lightbox]")).toHaveCount(0);
+  await page.goto(`${BASE}evenements/${archive!.id}/`);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    archive!.title,
+  );
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+    "content",
+    /og-image\.png$/,
+  );
+  await expectNoSeriousA11yViolations(page);
 });

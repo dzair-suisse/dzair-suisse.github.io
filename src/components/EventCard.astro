@@ -4,6 +4,7 @@ import { localizeEvent, useTranslations, type Lang } from "../i18n/utils";
 import { eventPath, type EventEntry } from "../lib/events";
 import { url } from "../lib/url";
 import { formatMonth, isoMonth, titleHtml } from "../lib/site";
+import EventPlaceholder from "./EventPlaceholder.astro";
 import Icon from "./Icon.astro";
 
 /** Default `sizes`, matching the 1→2→3→4 column grid of the events page. */
@@ -34,49 +35,62 @@ const { title, location, alt } = localizeEvent(event, lang);
 const when = formatMonth(date, lang);
 
 // Larger rendition opened by the lightbox (or directly, without JS).
-const full = await getImage({
-  src: image,
-  width: Math.min(1400, image.width),
-  format: "webp",
-});
+const full = image
+  ? await getImage({
+      src: image,
+      width: Math.min(1400, image.width),
+      format: "webp",
+    })
+  : undefined;
 ---
 
 <article
   class="event-card card group flex h-full flex-col overflow-hidden"
   data-category={category}
 >
-  <a
-    href={full.src}
-    class="event-media relative block overflow-hidden"
-    data-fit={fit}
-    data-lightbox
-    data-astro-reload
-    data-lightbox-alt={alt}
-    data-lightbox-caption={`${title} — ${when} · ${location}`}
-  >
-    <span class="sr-only">{t.events.enlarge(title)}</span>
-    <Picture
-      src={image}
-      alt={alt}
-      formats={["avif"]}
-      fallbackFormat="webp"
-      widths={[320, 480, 640, 800]}
-      sizes={sizes}
-      loading={eager ? "eager" : "lazy"}
-      fetchpriority={eager ? "high" : "auto"}
-      class:list={[
-        "size-full transition-transform duration-500 ease-(--ease-out-soft) group-hover:scale-[1.03]",
-        fit === "contain" ? "object-contain" : "object-cover object-top",
-      ]}
-      transition:name={`event-${event.id}`}
-    />
-    <span
-      class="bg-surface/90 text-ink absolute end-3 bottom-3 inline-grid size-10 place-items-center rounded-full opacity-0 shadow-md backdrop-blur transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
-      aria-hidden="true"
+  {image && full && alt ? (
+    <a
+      href={full.src}
+      class="event-media relative block overflow-hidden"
+      data-fit={fit}
+      data-lightbox
+      data-astro-reload
+      data-lightbox-alt={alt}
+      data-lightbox-caption={`${title} — ${when} · ${location}`}
     >
-      <Icon name="zoom" size={20} />
-    </span>
-  </a>
+      <span class="sr-only">{t.events.enlarge(title)}</span>
+      <Picture
+        src={image}
+        alt={alt}
+        formats={["avif"]}
+        fallbackFormat="webp"
+        widths={[320, 480, 640, 800]}
+        sizes={sizes}
+        loading={eager ? "eager" : "lazy"}
+        fetchpriority={eager ? "high" : "auto"}
+        class:list={[
+          "size-full transition-transform duration-500 ease-(--ease-out-soft) group-hover:scale-[1.03]",
+          fit === "contain" ? "object-contain" : "object-cover object-top",
+        ]}
+        transition:name={`event-${event.id}`}
+      />
+      <span
+        class="bg-surface/90 text-ink absolute end-3 bottom-3 inline-grid size-10 place-items-center rounded-full opacity-0 shadow-md backdrop-blur transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
+        aria-hidden="true"
+      >
+        <Icon name="zoom" size={20} />
+      </span>
+    </a>
+  ) : (
+    <div class="event-media" transition:name={`event-${event.id}`}>
+      <EventPlaceholder
+        id={`card-${event.id}`}
+        category={category}
+        date={date}
+        monthLabel={when}
+      />
+    </div>
+  )}
 
   <div class="flex flex-1 flex-col gap-3 p-5">
     {showCategory && (
