@@ -1,0 +1,347 @@
+---
+import { getImage, Picture } from "astro:assets";
+import Icon from "../Icon.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { CONTENT_LANG } from "../../i18n/routes";
+import {
+  localizedPath,
+  localizeEvent,
+  useTranslations,
+} from "../../i18n/utils";
+import type { EventPageProps } from "../../lib/event-pages";
+import { eventPath } from "../../lib/events";
+import { SITE, formatMonth, isoMonth, titleHtml } from "../../lib/site";
+import { absoluteUrl, url } from "../../lib/url";
+
+type Props = EventPageProps;
+
+const { lang, event, newer, older } = Astro.props;
+const t = useTranslations(lang);
+const { date, image, category, campus, fit, permalink } = event.data;
+const { title, location, alt } = localizeEvent(event, lang);
+const when = formatMonth(date, lang);
+// « EPFL » as both place and campus would say the same thing twice.
+const showCampus = t.campus[campus] !== location;
+const path = eventPath(event.id, lang);
+const eventsUrl = url(localizedPath("evenements/", lang));
+const categoryUrl = `${eventsUrl}?categorie=${category}`;
+const description = t.event.description(title, when, location);
+
+// Social preview (WhatsApp, LinkedIn…): the event photo itself, as JPEG.
+const social = await getImage({
+  src: image,
+  width: Math.min(1200, image.width),
+  format: "jpeg",
+});
+const socialHeight = Math.round(
+  (image.height * Math.min(1200, image.width)) / image.width,
+);
+
+const neighbours = [
+  { entry: newer, label: t.event.newer, icon: "arrow-left" as const },
+  { entry: older, label: t.event.older, icon: "arrow-right" as const },
+].flatMap(({ entry, label, icon }) =>
+  entry
+    ? [
+        {
+          label,
+          icon,
+          title: localizeEvent(entry, lang).title,
+          when: formatMonth(entry.data.date, lang),
+          href: url(eventPath(entry.id, lang)),
+        },
+      ]
+    : [],
+);
+
+const organizer = {
+  "@type": "Organization",
+  name: SITE.legalName,
+  url: absoluteUrl(localizedPath("", lang), Astro.site),
+};
+const eventLd = {
+  "@context": "https://schema.org",
+  "@type": "Event",
+  name: title,
+  description,
+  startDate: isoMonth(date),
+  eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+  location: { "@type": "Place", name: location },
+  image: [absoluteUrl(social.src, Astro.site)],
+  organizer,
+  inLanguage: CONTENT_LANG[lang],
+  url: absoluteUrl(path, Astro.site),
+  ...(permalink ? { sameAs: [permalink] } : {}),
+};
+const breadcrumbLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { name: t.nav.home, path: localizedPath("", lang) },
+    { name: t.nav.events, path: localizedPath("evenements/", lang) },
+    { name: title, path },
+  ].map((item, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    name: item.name,
+    item: absoluteUrl(item.path, Astro.site),
+  })),
+};
+---
+
+<BaseLayout
+  lang={lang}
+  title={title}
+  description={description}
+  path={path}
+  image={social.src}
+  imageAlt={alt}
+  imageWidth={Math.min(1200, image.width)}
+  imageHeight={socialHeight}
+  ogType="article"
+  jsonLd={[eventLd, breadcrumbLd]}
+>
+  <article class="event-page container-page pt-8 pb-8 md:pt-12">
+    <nav aria-label={t.event.breadcrumb} class="text-muted mb-8 text-sm">
+      <ol class="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <li>
+          <a class="crumb" href={url(localizedPath("", lang))}>
+            {t.nav.home}
+          </a>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li>
+          <a class="crumb" href={eventsUrl}>
+            {t.nav.events}
+          </a>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li aria-current="page" class="text-ink line-clamp-1">
+          {title}
+        </li>
+      </ol>
+    </nav>
+
+    <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-14">
+      <figure class="event-photo card overflow-hidden p-0" data-fit={fit}>
+        <Picture
+          src={image}
+          alt={alt}
+          formats={["avif"]}
+          fallbackFormat="webp"
+          widths={[480, 720, 960, 1280]}
+          sizes="(min-width: 64rem) 38rem, 92vw"
+          loading="eager"
+          fetchpriority="high"
+          class:list={[
+            "size-full",
+            fit === "contain" ? "object-contain" : "object-cover",
+          ]}
+          transition:name={`event-${event.id}`}
+        />
+      </figure>
+
+      <div class="lg:sticky lg:top-28">
+        <a href={categoryUrl} class="eyebrow mb-4 hover:underline">
+          {t.categories[category]}
+        </a>
+        <h1
+          class="text-ink text-[clamp(2.1rem,5vw,3.4rem)] font-semibold"
+          set:html={titleHtml(title)}
+        />
+
+        <dl class="event-facts mt-8">
+          <div>
+            <dt>
+              <Icon name="calendar" size={18} />
+              <span class="sr-only">{t.event.date}</span>
+            </dt>
+            <dd>
+              <time datetime={isoMonth(date)}>{when}</time>
+            </dd>
+          </div>
+          <div>
+            <dt>
+              <Icon name="map-pin" size={18} />
+              <span class="sr-only">{t.event.place}</span>
+            </dt>
+            <dd>{location}</dd>
+          </div>
+          {showCampus && (
+            <div>
+              <dt>
+                <Icon name="building" size={18} />
+                <span class="sr-only">{t.event.campus}</span>
+              </dt>
+              <dd>{t.campus[campus]}</dd>
+            </div>
+          )}
+        </dl>
+
+        <div class="mt-9 flex flex-wrap gap-3">
+          <button
+            type="button"
+            class="btn btn-primary"
+            data-share
+            data-share-title={title}
+            data-share-text={description}
+            data-share-copied={t.event.copied}
+          >
+            <Icon name="share" size={18} />
+            <span data-share-label>{t.event.share}</span>
+          </button>
+          {permalink && (
+            <a
+              href={permalink}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn-ghost"
+            >
+              <Icon name="instagram" size={18} />
+              {t.event.instagram}
+              <span class="sr-only">{t.a11y.newTab}</span>
+            </a>
+          )}
+        </div>
+        <p
+          class="sr-only"
+          role="status"
+          aria-live="polite"
+          data-share-status
+        ></p>
+      </div>
+    </div>
+
+    <nav
+      aria-label={t.event.neighbours}
+      class="border-line mt-16 grid gap-4 border-t pt-10 sm:grid-cols-2"
+    >
+      {neighbours.map((n) => (
+        <a
+          href={n.href}
+          class:list={[
+            "neighbour card p-5",
+            n.icon === "arrow-right" && "sm:col-start-2 sm:text-end",
+          ]}
+        >
+          <span class="text-muted inline-flex items-center gap-2 text-sm font-semibold">
+            {n.icon === "arrow-left" && <Icon name="arrow-left" size={16} />}
+            {n.label}
+            {n.icon === "arrow-right" && <Icon name="arrow-right" size={16} />}
+          </span>
+          <span
+            class="text-ink font-display mt-2 block text-lg font-semibold"
+            set:html={titleHtml(n.title)}
+          />
+          <span class="text-muted block text-sm">{n.when}</span>
+        </a>
+      ))}
+    </nav>
+
+    <p class="mt-10">
+      <a href={eventsUrl} class="btn btn-ghost">
+        <Icon name="arrow-left" size={18} />
+        {t.event.backToAll}
+      </a>
+    </p>
+  </article>
+</BaseLayout>
+
+<style>
+  .crumb {
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklch, currentColor 35%, transparent);
+    text-underline-offset: 3px;
+  }
+  .crumb:hover {
+    color: var(--primary);
+  }
+
+  .event-photo {
+    aspect-ratio: 4 / 5;
+    max-block-size: 80dvh;
+    inline-size: 100%;
+    background: var(--surface-2);
+  }
+  .event-photo[data-fit="contain"] {
+    background: color-mix(in oklch, var(--sage) 14%, var(--bg-soft));
+  }
+
+  .event-facts {
+    display: grid;
+    gap: 0.9rem;
+  }
+  .event-facts > div {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.05rem;
+  }
+  .event-facts dt {
+    display: inline-grid;
+    place-items: center;
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+    flex-shrink: 0;
+    border-radius: 0.75rem;
+    background: var(--surface-2);
+    color: var(--primary);
+  }
+
+  .neighbour {
+    display: block;
+    text-decoration: none;
+    transition:
+      border-color 0.2s,
+      translate 0.2s var(--ease-out-soft);
+  }
+  .neighbour:hover {
+    border-color: var(--primary);
+    translate: 0 -2px;
+  }
+</style>
+
+<script>
+  /*
+   * Share: the system share sheet where available (phones), otherwise copy the
+   * link and say so (visible label + live region).
+   */
+  function initShare(): void {
+    const button = document.querySelector<HTMLButtonElement>("[data-share]");
+    if (!button || button.dataset["bound"]) return;
+    button.dataset["bound"] = "true";
+    const label = button.querySelector<HTMLElement>("[data-share-label]");
+    const status = document.querySelector<HTMLElement>("[data-share-status]");
+    const original = label?.textContent ?? "";
+
+    button.addEventListener("click", async () => {
+      const data = {
+        title: button.dataset["shareTitle"] ?? document.title,
+        text: button.dataset["shareText"] ?? "",
+        url: location.href.split("#")[0] ?? location.href,
+      };
+      if (navigator.share) {
+        try {
+          await navigator.share(data);
+        } catch {
+          /* cancelled by the user */
+        }
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(data.url);
+        const copied = button.dataset["shareCopied"] ?? "";
+        if (label) label.textContent = copied;
+        if (status) status.textContent = copied;
+        setTimeout(() => {
+          if (label) label.textContent = original;
+          if (status) status.textContent = "";
+        }, 2500);
+      } catch {
+        /* clipboard unavailable: nothing else to do */
+      }
+    });
+  }
+
+  document.addEventListener("astro:page-load", initShare);
+</script>

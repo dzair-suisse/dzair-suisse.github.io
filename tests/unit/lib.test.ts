@@ -84,3 +84,11 @@ describe("site origin", () => {
     }
   });
 });
+
+describe("eventPath", () => {
+  it("localizes the event page path", async () => {
+    const { localizedPath } = await import("../../src/i18n/routes");
+    expect(localizedPath("evenements/x/", "en")).toBe("en/events/x/");
+    expect(localizedPath("en/events/x/", "fr")).toBe("evenements/x/");
+  });
+});

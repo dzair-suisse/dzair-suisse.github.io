@@ -511,3 +511,18 @@
     animation: none !important;
   }
 }
+
+/* Event card title: link to the event page, underlined on hover/focus. */
+@layer components {
+  .event-link {
+    text-decoration: none;
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1.5px
+      no-repeat;
+    transition: background-size 0.3s var(--ease-out-soft);
+  }
+  .event-link:hover,
+  .event-link:focus-visible {
+    background-size: 100% 1.5px;
+    color: var(--primary);
+  }
+}

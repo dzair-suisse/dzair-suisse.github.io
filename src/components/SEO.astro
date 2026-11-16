@@ -19,6 +19,11 @@ export interface Props {
   /** Path (relative to base) of the social image in `public/`. */
   image?: string | undefined;
   imageAlt?: string | undefined;
+  /** Size of `image` (defaults: the 1200×630 site image). */
+  imageWidth?: number | undefined;
+  imageHeight?: number | undefined;
+  /** Open Graph type (`article` for an event page). */
+  ogType?: "website" | "article" | undefined;
   noindex?: boolean | undefined;
   /** JSON-LD objects to embed. */
   jsonLd?: Record<string, unknown>[] | undefined;
@@ -32,6 +37,9 @@ const {
   path = "",
   image = "og-image.png",
   imageAlt = t.site.ogImageAlt,
+  imageWidth = 1200,
+  imageHeight = 630,
+  ogType = "website",
   noindex = false,
   jsonLd = [],
 } = Astro.props;
@@ -78,7 +86,7 @@ const ogImage = absoluteUrl(image, Astro.site);
 />
 
 <!-- Open Graph -->
-<meta property="og:type" content="website" />
+<meta property="og:type" content={ogType} />
 <meta property="og:site_name" content={SITE.name} />
 <meta property="og:locale" content={OG_LOCALE[lang]} />
 {LANGS.filter((l) => l !== lang).map((l) => (
@@ -88,8 +96,8 @@ const ogImage = absoluteUrl(image, Astro.site);
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonical} />
 <meta property="og:image" content={ogImage} />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
+<meta property="og:image:width" content={String(imageWidth)} />
+<meta property="og:image:height" content={String(imageHeight)} />
 <meta property="og:image:alt" content={imageAlt} />
 
 <!-- Twitter -->
