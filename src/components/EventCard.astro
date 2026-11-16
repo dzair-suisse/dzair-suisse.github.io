@@ -1,7 +1,8 @@
 ---
 import { getImage, Picture } from "astro:assets";
 import { localizeEvent, useTranslations, type Lang } from "../i18n/utils";
-import type { EventEntry } from "../lib/events";
+import { eventPath, type EventEntry } from "../lib/events";
+import { url } from "../lib/url";
 import { formatMonth, isoMonth, titleHtml } from "../lib/site";
 import Icon from "./Icon.astro";
 
@@ -83,10 +84,13 @@ const full = await getImage({
         {t.categories[category]}
       </p>
     )}
-    <h3
-      class="text-ink text-lg leading-snug font-semibold"
-      set:html={titleHtml(title)}
-    />
+    <h3 class="text-ink text-lg leading-snug font-semibold">
+      <a
+        href={url(eventPath(event.id, lang))}
+        class="event-link"
+        set:html={titleHtml(title)}
+      />
+    </h3>
     <p class="event-meta text-muted mt-auto flex flex-col items-start gap-1 text-sm">
       <span class="inline-flex items-center gap-1.5">
         <Icon name="calendar" size={16} />

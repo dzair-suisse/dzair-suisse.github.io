@@ -56,6 +56,34 @@ const values: { icon: IconName; title: string; text: string }[] = [
   { icon: "sparkles", ...t.home.values.culture },
 ];
 
+const joinSteps: {
+  title: string;
+  text: string;
+  action: string;
+  href: string;
+  icon: IconName;
+  external: boolean;
+}[] = [
+  {
+    ...t.home.joinSteps.form,
+    href: SITE.joinForm,
+    icon: "handshake",
+    external: true,
+  },
+  {
+    ...t.home.joinSteps.instagram,
+    href: SITE.instagram,
+    icon: "instagram",
+    external: true,
+  },
+  {
+    ...t.home.joinSteps.events,
+    href: eventsUrl,
+    icon: "calendar",
+    external: false,
+  },
+];
+
 const organization = {
   "@context": "https://schema.org",
   "@type": "Organization",
@@ -231,6 +259,45 @@ const webPage = {
           </li>
         ))}
       </ul>
+    </div>
+  </section>
+
+  <!-- Nous rejoindre --------------------------------------------------- -->
+  <section class="pt-20 md:pt-28" aria-labelledby="join-title">
+    <div class="container-page">
+      <div class="reveal max-w-2xl">
+        <p class="eyebrow mb-4">{t.home.joinEyebrow}</p>
+        <h2 id="join-title" class="text-ink text-4xl font-semibold md:text-5xl">
+          {t.home.joinTitle}
+        </h2>
+      </div>
+      <ol class="join-steps mt-12">
+        {joinSteps.map((step, i) => (
+          <li class="join-step reveal">
+            <span class="join-number font-display" aria-hidden="true">
+              {i + 1}
+            </span>
+            <h3 class="text-ink text-xl font-semibold">{step.title}</h3>
+            <p class="text-muted mt-2">{step.text}</p>
+            <a
+              href={step.href}
+              class="join-action mt-5"
+              {...(step.external
+                ? { target: "_blank", rel: "noopener noreferrer" }
+                : {})}
+            >
+              <Icon name={step.icon} size={18} />
+              {step.action}
+              {step.external && (
+                <>
+                  <Icon name="external" size={14} />
+                  <span class="sr-only">{t.a11y.newTab}</span>
+                </>
+              )}
+            </a>
+          </li>
+        ))}
+      </ol>
     </div>
   </section>
 
@@ -433,6 +500,63 @@ const webPage = {
         animation-range: entry 20% cover 45%;
       }
     }
+  }
+
+  /* Join: three numbered steps linked by a line (a real sequence). */
+  .join-steps {
+    display: grid;
+    gap: 2.5rem;
+    counter-reset: step;
+  }
+  @media (width >= 48rem) {
+    .join-steps {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 2rem;
+    }
+  }
+  .join-step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .join-number {
+    display: inline-grid;
+    place-items: center;
+    inline-size: 3rem;
+    block-size: 3rem;
+    margin-block-end: 1.25rem;
+    border-radius: 50%;
+    background: var(--primary);
+    color: var(--on-primary);
+    font-size: 1.35rem;
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+  }
+  @media (width >= 48rem) {
+    .join-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      inset-block-start: 1.5rem;
+      inset-inline: 3.75rem -1.25rem;
+      border-block-start: 1.5px dashed var(--border);
+    }
+  }
+  .join-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-block-start: auto;
+    padding-block-start: 1.25rem;
+    font-weight: 600;
+    color: var(--primary);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in oklch, currentColor 35%, transparent);
+    text-underline-offset: 4px;
+  }
+  .join-action:hover {
+    text-decoration-color: currentColor;
   }
 
   .value-index {

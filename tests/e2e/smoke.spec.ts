@@ -544,3 +544,106 @@ test.describe("Version anglaise", () => {
     await expect(page.locator("aside[data-lang-banner]")).toBeHidden();
   });
 });
+
+test.describe("Pages des événements", () => {
+  const FIRST = (
+    YAML.parse(readFileSync("src/content/events.yaml", "utf8")) as {
+      id: string;
+      title: string;
+      en?: { title: string };
+    }[]
+  )[0]!;
+
+  test("une carte mène à la page de l'événement, et retour", async ({
+    page,
+  }) => {
+    const errors = trackErrors(page);
+    await page.goto(`${BASE}evenements/`);
+    await page
+      .locator("#events-list")
+      .getByRole("link", { name: FIRST.title, exact: true })
+      .click();
+    await expect(page).toHaveURL(new RegExp(`/evenements/${FIRST.id}/$`));
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      FIRST.title,
+    );
+    await expect(
+      page.getByRole("navigation", { name: "Fil d’Ariane" }),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Partager" })).toBeVisible();
+    await page
+      .getByRole("link", { name: "Tous les événements" })
+      .last()
+      .click();
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Nos événements" }),
+    ).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
+  test("a des données structurées Event et un aperçu avec la photo", async ({
+    page,
+  }) => {
+    await page.goto(`${BASE}evenements/${FIRST.id}/`);
+    const ld = await page
+      .locator('script[type="application/ld+json"]')
+      .allTextContents();
+    const types = ld.map(
+      (s) => (JSON.parse(s) as { "@type": string })["@type"],
+    );
+    expect(types).toEqual(["Event", "BreadcrumbList"]);
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+      "content",
+      /^https:\/\/.+\/_astro\/.+\.jpe?g$/,
+    );
+    await expect(page.locator('meta[property="og:type"]')).toHaveAttribute(
+      "content",
+      "article",
+    );
+  });
+
+  test("le bouton Partager copie le lien sans Web Share", async ({
+    page,
+    context,
+    browserName,
+  }) => {
+    test.skip(browserName !== "chromium", "clipboard permissions: Chromium");
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await page.addInitScript(() => {
+      // Desktop path: no system share sheet.
+      Object.defineProperty(navigator, "share", { value: undefined });
+    });
+    await page.goto(`${BASE}evenements/${FIRST.id}/`);
+    await page.getByRole("button", { name: "Partager" }).click();
+    await expect(page.getByRole("status")).toHaveText("Lien copié");
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(
+      new RegExp(`/evenements/${FIRST.id}/$`),
+    );
+  });
+
+  test("existe en anglais, avec les liens de langue", async ({ page }) => {
+    await page.goto(`${BASE}en/events/${FIRST.id}/`);
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      FIRST.en?.title ?? FIRST.title,
+    );
+    await expect(
+      page.locator('link[rel="alternate"][hreflang="fr"]'),
+    ).toHaveAttribute("href", `${SITE_ORIGIN}/evenements/${FIRST.id}/`);
+  });
+
+  test("n'a pas de violation d'accessibilité grave", async ({ page }) => {
+    await page.goto(`${BASE}evenements/${FIRST.id}/`);
+    await expectNoSeriousA11yViolations(page);
+  });
+});
+
+test("l'accueil présente les trois étapes pour nous rejoindre", async ({
+  page,
+}) => {
+  await page.goto(BASE);
+  const steps = page
+    .getByRole("region", { name: "Rejoindre DZAÏR en trois étapes" })
+    .getByRole("listitem");
+  await expect(steps).toHaveCount(3);
+});
