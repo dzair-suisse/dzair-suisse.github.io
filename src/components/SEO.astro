@@ -1,12 +1,20 @@
 ---
+import { HTML_LANG, OG_LOCALE } from "../i18n/routes";
+import {
+  LANGS,
+  localizedPath,
+  useTranslations,
+  type Lang,
+} from "../i18n/utils";
 import { SITE } from "../lib/site";
 import { absoluteUrl, url } from "../lib/url";
 
 export interface Props {
+  lang: Lang;
   /** Page title (without the site suffix). Omit on the home page. */
   title?: string | undefined;
   description?: string | undefined;
-  /** Path relative to the base, e.g. "evenements/". */
+  /** Path of this page relative to the base, e.g. "evenements/" or "en/events/". */
   path?: string | undefined;
   /** Path (relative to base) of the social image in `public/`. */
   image?: string | undefined;
@@ -16,17 +24,25 @@ export interface Props {
   jsonLd?: Record<string, unknown>[] | undefined;
 }
 
+const t = useTranslations(Astro.props.lang);
 const {
+  lang,
   title,
-  description = SITE.description,
+  description = t.site.description,
   path = "",
   image = "og-image.png",
-  imageAlt = "Logo de DZAÏR – Association des étudiants algériens en Suisse",
+  imageAlt = t.site.ogImageAlt,
   noindex = false,
   jsonLd = [],
 } = Astro.props;
 
-const fullTitle = title ? `${title} | ${SITE.name}` : SITE.title;
+const fullTitle = title ? `${title} | ${SITE.name}` : t.site.title;
+// Same page in every language (hreflang alternates).
+const alternates = LANGS.map((l) => ({
+  hreflang: HTML_LANG[l],
+  href: absoluteUrl(localizedPath(path, l), Astro.site),
+}));
+const xDefault = absoluteUrl(localizedPath(path, "fr"), Astro.site);
 const canonical = absoluteUrl(path, Astro.site);
 const ogImage = absoluteUrl(image, Astro.site);
 ---
@@ -38,6 +54,11 @@ const ogImage = absoluteUrl(image, Astro.site);
 ) : (
   <link rel="canonical" href={canonical} />
 )}
+{!noindex &&
+  alternates.map((alt) => (
+    <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />
+  ))}
+{!noindex && <link rel="alternate" hreflang="x-default" href={xDefault} />}
 
 <link rel="icon" href={url("favicon.svg")} type="image/svg+xml" />
 <link rel="icon" href={url("favicon.png")} type="image/png" sizes="any" />
@@ -59,7 +80,10 @@ const ogImage = absoluteUrl(image, Astro.site);
 <!-- Open Graph -->
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content={SITE.name} />
-<meta property="og:locale" content={SITE.locale} />
+<meta property="og:locale" content={OG_LOCALE[lang]} />
+{LANGS.filter((l) => l !== lang).map((l) => (
+  <meta property="og:locale:alternate" content={OG_LOCALE[l]} />
+))}
 <meta property="og:title" content={fullTitle} />
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonical} />

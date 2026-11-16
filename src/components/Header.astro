@@ -1,22 +1,32 @@
 ---
 import { Image } from "astro:assets";
 import logo from "../assets/brand/logo-dzair.png";
+import { localizedPath, useTranslations, type Lang } from "../i18n/utils";
 import { SITE } from "../lib/site";
 import { stripBase, url } from "../lib/url";
 import Icon from "./Icon.astro";
+import LanguageSwitcher from "./LanguageSwitcher.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 
-const current = stripBase(Astro.url.pathname);
+interface Props {
+  lang: Lang;
+}
 
-const links = [
-  { href: url(), label: "Accueil", match: "/" },
-  { href: url("#quisommesnous"), label: "Qui sommes-nous ?" },
-  { href: url("evenements/"), label: "Événements", match: "/evenements" },
-  { href: url("#contact"), label: "Nous contacter" },
-] as const;
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const current = stripBase(Astro.url.pathname);
+const home = localizedPath("", lang);
+const events = localizedPath("evenements/", lang);
+
+const links: { href: string; label: string; match?: string }[] = [
+  { href: url(home), label: t.nav.home, match: stripBase(url(home)) },
+  { href: url(`${home}#quisommesnous`), label: t.nav.about },
+  { href: url(events), label: t.nav.events, match: stripBase(url(events)) },
+  { href: url(`${home}#contact`), label: t.nav.contact },
+];
 
 function isCurrent(link: (typeof links)[number]): boolean {
-  return "match" in link && link.match === current;
+  return link.match === current;
 }
 ---
 
@@ -26,9 +36,9 @@ function isCurrent(link: (typeof links)[number]): boolean {
 >
   <div class="container-page flex h-[4.5rem] items-center justify-between gap-4">
     <a
-      href={url()}
+      href={url(home)}
       class="logo-link flex items-center rounded-xl px-1.5 py-1"
-      aria-label={`${SITE.name} – accueil`}
+      aria-label={t.nav.logo}
       transition:name="site-logo"
     >
       <Image
@@ -41,7 +51,7 @@ function isCurrent(link: (typeof links)[number]): boolean {
       />
     </a>
 
-    <nav aria-label="Navigation principale" class="hidden lg:block">
+    <nav aria-label={t.nav.main} class="hidden lg:block">
       <ul class="flex items-center gap-1">
         {links.map((link) => (
           <li>
@@ -58,16 +68,17 @@ function isCurrent(link: (typeof links)[number]): boolean {
     </nav>
 
     <div class="flex items-center gap-2">
-      <ThemeToggle />
+      <LanguageSwitcher lang={lang} class="hidden sm:flex" />
+      <ThemeToggle lang={lang} />
       <a
         href={SITE.joinForm}
         target="_blank"
         rel="noopener noreferrer"
         class="btn btn-primary hidden py-2! text-sm sm:inline-flex"
       >
-        Rejoins-nous
+        {t.join}
         <Icon name="external" size={16} />
-        <span class="sr-only">(nouvel onglet)</span>
+        <span class="sr-only">{t.a11y.newTab}</span>
       </a>
       <button
         type="button"
@@ -79,7 +90,7 @@ function isCurrent(link: (typeof links)[number]): boolean {
         data-menu-open
       >
         <Icon name="menu" size={24} />
-        <span class="sr-only">Ouvrir le menu</span>
+        <span class="sr-only">{t.nav.openMenu}</span>
       </button>
     </div>
   </div>
@@ -96,7 +107,7 @@ function isCurrent(link: (typeof links)[number]): boolean {
   >
     <div class="mb-4 flex items-center justify-between">
       <p id="mobile-menu-title" class="font-display text-xl font-semibold">
-        Menu
+        {t.nav.menu}
       </p>
       <form method="dialog">
         <button
@@ -104,11 +115,11 @@ function isCurrent(link: (typeof links)[number]): boolean {
           class="hover:bg-surface-2 inline-grid size-11 place-items-center rounded-full"
         >
           <Icon name="close" size={24} />
-          <span class="sr-only">Fermer le menu</span>
+          <span class="sr-only">{t.nav.closeMenu}</span>
         </button>
       </form>
     </div>
-    <nav aria-label="Navigation mobile">
+    <nav aria-label={t.nav.mobile}>
       <ul class="flex flex-col gap-1">
         {links.map((link) => (
           <li>
@@ -130,11 +141,15 @@ function isCurrent(link: (typeof links)[number]): boolean {
         class="btn btn-primary mt-5 w-full"
         data-close-menu
       >
-        Rejoins-nous
+        {t.join}
         <Icon name="external" size={18} />
-        <span class="sr-only">(nouvel onglet)</span>
+        <span class="sr-only">{t.a11y.newTab}</span>
       </a>
     </nav>
+    <LanguageSwitcher
+      lang={lang}
+      class="border-line mt-5 justify-center border-t pt-4"
+    />
   </dialog>
 </header>
 

@@ -1,6 +1,6 @@
 ---
 import { getImage, Picture } from "astro:assets";
-import { CATEGORY_LABELS } from "../lib/categories";
+import { localizeEvent, useTranslations, type Lang } from "../i18n/utils";
 import type { EventEntry } from "../lib/events";
 import { formatMonth, isoMonth, titleHtml } from "../lib/site";
 import Icon from "./Icon.astro";
@@ -11,6 +11,7 @@ const GRID_SIZES =
 
 interface Props {
   event: EventEntry;
+  lang: Lang;
   /** `sizes` attribute of the photo, for grids with other column widths. */
   sizes?: string;
   /** Load the image eagerly (first cards above the fold). */
@@ -21,12 +22,15 @@ interface Props {
 
 const {
   event,
+  lang,
   sizes = GRID_SIZES,
   eager = false,
   showCategory = false,
 } = Astro.props;
-const { title, date, location, image, alt, category, fit } = event.data;
-const when = formatMonth(date);
+const t = useTranslations(lang);
+const { date, image, category, fit } = event.data;
+const { title, location, alt } = localizeEvent(event, lang);
+const when = formatMonth(date, lang);
 
 // Larger rendition opened by the lightbox (or directly, without JS).
 const full = await getImage({
@@ -49,7 +53,7 @@ const full = await getImage({
     data-lightbox-alt={alt}
     data-lightbox-caption={`${title} — ${when} · ${location}`}
   >
-    <span class="sr-only">Agrandir la photo «&nbsp;{title}&nbsp;»&nbsp;:</span>
+    <span class="sr-only">{t.events.enlarge(title)}</span>
     <Picture
       src={image}
       alt={alt}
@@ -76,7 +80,7 @@ const full = await getImage({
   <div class="flex flex-1 flex-col gap-3 p-5">
     {showCategory && (
       <p class="text-sage text-xs font-semibold tracking-[0.1em] uppercase">
-        {CATEGORY_LABELS[category]}
+        {t.categories[category]}
       </p>
     )}
     <h3

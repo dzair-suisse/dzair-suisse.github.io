@@ -1,0 +1,120 @@
+---
+/**
+ * "FR | EN" links to the same page in each language. Query string
+ * (`?categorie=…`) and hash are carried over on the client; the choice is
+ * remembered (localStorage "lang"). Full page loads (`data-astro-reload`) so
+ * that <html lang> and the whole document change language.
+ */
+import { HTML_LANG } from "../i18n/routes";
+import {
+  LANGS,
+  localizedPath,
+  useTranslations,
+  type Lang,
+} from "../i18n/utils";
+import { stripBase, url } from "../lib/url";
+
+interface Props {
+  lang: Lang;
+  class?: string;
+}
+
+const { lang, class: className } = Astro.props;
+const current = stripBase(Astro.url.pathname);
+const links = LANGS.map((l) => ({
+  lang: l,
+  href: url(localizedPath(current, l)),
+  name: useTranslations(l).lang.name,
+}));
+---
+
+<div
+  role="group"
+  aria-label="Langue / Language"
+  class:list={[
+    "lang-switch flex items-center text-sm font-semibold",
+    className,
+  ]}
+>
+  {links.map((link, i) => (
+    <>
+      {i > 0 && (
+        <span aria-hidden="true" class="text-muted px-0.5">
+          |
+        </span>
+      )}
+      <a
+        href={link.href}
+        hreflang={HTML_LANG[link.lang]}
+        lang={HTML_LANG[link.lang]}
+        aria-current={link.lang === lang ? "true" : undefined}
+        class="lang-link"
+        data-lang-switch={link.lang}
+        data-lang-href={link.href}
+        data-astro-reload
+      >
+        {link.lang.toUpperCase()}
+        <span class="sr-only">({link.name})</span>
+      </a>
+    </>
+  ))}
+</div>
+
+<style>
+  .lang-link {
+    display: inline-grid;
+    place-items: center;
+    min-inline-size: 2.75rem;
+    min-block-size: 2.75rem;
+    border-radius: 999px;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    transition:
+      color 0.2s,
+      background-color 0.2s;
+  }
+  .lang-link:hover {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+  .lang-link[aria-current="true"] {
+    color: var(--primary);
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.35em;
+  }
+</style>
+
+<script>
+  /*
+   * Keeps the switcher (and banner) links in sync with the current query
+   * string and hash, and remembers the chosen language.
+   */
+  function syncLangLinks(): void {
+    document
+      .querySelectorAll<HTMLAnchorElement>("a[data-lang-href]")
+      .forEach((link) => {
+        const base = link.dataset["langHref"];
+        if (base) link.href = base + location.search + location.hash;
+      });
+  }
+
+  document.addEventListener("astro:page-load", syncLangLinks);
+  window.addEventListener("hashchange", syncLangLinks);
+  // Dispatched by the events filter after it updates ?categorie=…
+  document.addEventListener("dzair:urlchange", syncLangLinks);
+
+  document.addEventListener("click", (event) => {
+    const link = (event.target as Element | null)?.closest<HTMLAnchorElement>(
+      "a[data-lang-switch]",
+    );
+    if (!link) return;
+    syncLangLinks();
+    try {
+      localStorage.setItem("lang", link.dataset["langSwitch"] ?? "fr");
+    } catch {
+      /* storage unavailable */
+    }
+  });
+</script>
