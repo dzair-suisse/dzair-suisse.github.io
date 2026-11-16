@@ -41,12 +41,14 @@ Première utilisation des tests : `npx playwright install chromium`.
 public/                 favicons, image Open Graph, manifest, redirection evenements.html
 scripts/                generate-icons.mjs (régénère favicons + og-image)
 src/assets/             logos et photos des événements (optimisés au build)
-src/components/         Header, Footer, EventCard, Lightbox, SEO, Icon, ThemeToggle
+src/components/         Header, Footer, EventCard, Lightbox, SEO, Icon, ThemeToggle, LanguageSwitcher…
+src/components/pages/   corps des pages (HomePage, EventsPage), partagés par le français et l’anglais
 src/content/events.yaml données des événements
-src/content.config.ts   schéma (zod) de la collection « events »
+src/content.config.ts   schéma (zod) des collections d’événements
+src/i18n/               textes de l’interface (ui.ts) et correspondance des URL FR ⇄ EN (routes.ts)
 src/layouts/            BaseLayout
 src/lib/                helpers (URL avec base, catégories, formats de date…)
-src/pages/              index, evenements, 404
+src/pages/              index, evenements, 404 (FR) ; en/index, en/events (EN) : simples enveloppes
 src/styles/global.css   thème Tailwind + tokens de couleur (OKLCH)
 tests/                  tests Playwright
 ```
@@ -70,12 +72,34 @@ tests/                  tests Playwright
 3. `npm run check && npm run build` : le schéma refuse toute donnée invalide.
    Les événements sont triés du plus récent au plus ancien ; les trois plus récents apparaissent sur l’accueil.
 
+## Version anglaise
+
+Le français reste à la racine (, ) ; l’anglais est servi sous et (i18n intégré d’Astro). Les deux langues partagent le même balisage : les fichiers de appellent / () avec ou .
+
+- **Textes de l’interface** : , un objet et un objet . L’objet anglais est typé
+  d’après le français : une clé oubliée fait échouer .
+- **URL** : (, segments traduits comme ⇄ ).
+  Chaque page déclare ses équivalents (), repris dans le plan du site.
+- **Sélecteur FR | EN** (en-tête et menu mobile) : garde et l’ancre, et mémorise le choix.
+  Seule l’accueil française renvoie vers si l’anglais a été choisi ; sans choix, un navigateur
+  dans l’autre langue voit seulement un bandeau discret (jamais de redirection automatique).
+- **404** : GitHub Pages ne sert qu’un , qui affiche donc les deux langues.
+
+### Titre anglais d’un événement
+
+Ajouter un bloc à l’événement (dans ou ) :
+
+\
+Sans bloc , la version anglaise affiche le titre, le lieu et le texte alternatif français. Les
+événements importés depuis Instagram reçoivent automatiquement leur version anglaise.
+
 ## Import automatique depuis Instagram
 
 Le workflow **Synchronisation Instagram** (`.github/workflows/sync-instagram.yml`) tourne chaque
 jour (et à la demande depuis l’onglet _Actions_). Il lit les derniers posts de @dzair_suisse, et
 Claude (`claude-opus-5-5`) décide pour chaque nouveau post s’il s’agit d’un événement, s’il fait
-doublon avec un événement existant, et en extrait titre, date, lieu, catégorie et texte alternatif.
+doublon avec un événement existant, et en extrait titre, date, lieu, catégorie et texte alternatif
+(titre et texte alternatif aussi en anglais).
 Les nouveaux événements sont ajoutés à `src/content/instagram-events.yaml` (image dans
 `src/assets/events/instagram/`), le site est vérifié, commité puis redéployé.
 

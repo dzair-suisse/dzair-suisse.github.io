@@ -7,6 +7,8 @@
 # - image : chemin relatif à ce fichier
 # - alt : description de l’image en français (accessibilité)
 # - fit : contain (affiche, montrée en entier) | cover (photo, recadrée ; par défaut)
+# - en : version anglaise (facultative) : title, alt et, si le nom diffère en
+#   anglais, location. Sans elle, le site anglais affiche les textes français.
 
 # --- Événements EPFL / UNIL ---
 - id: semaine-associations-2025
@@ -18,6 +20,9 @@
   image: ../assets/events/semaine-associations-2025.jpg
   fit: contain
   alt: Affiche « Semaine des associations » invitant à rejoindre le stand DZAÏR, avec un drapeau algérien sur un fond de photos floutées.
+  en:
+    title: Associations Week 2025
+    alt: "“Semaine des associations” (Associations Week) poster inviting people to visit the DZAÏR stand, with an Algerian flag over a background of blurred photos."
 
 - id: global-village-2025
   title: Global Village 2025
@@ -28,6 +33,9 @@
   image: ../assets/events/global-village-2025.jpg
   fit: contain
   alt: Affiche orange « DZAIR à Global Village ! » avec une guirlande de drapeaux du monde, le drapeau algérien et des illustrations de plats.
+  en:
+    title: Global Village 2025
+    alt: Orange “DZAIR à Global Village !” poster with bunting of world flags, the Algerian flag and illustrations of dishes.
 
 - id: journee-accueil-2024
   title: Journée d’accueil 2024
@@ -38,6 +46,9 @@
   image: ../assets/events/journee-accueil-2024.jpeg
   fit: contain
   alt: Affiche verte « Journée d’accueil » de l’Université de Lausanne présentant le stand de l’Association des étudiants algériens en Suisse.
+  en:
+    title: Welcome Day 2024
+    alt: Green University of Lausanne “Journée d’accueil” (Welcome Day) poster featuring the stand of the Association of Algerian Students in Switzerland.
 
 - id: vivapoly-2024
   title: Vivapoly 2024
@@ -48,6 +59,9 @@
   image: ../assets/events/vivapoly-2024.jpeg
   fit: contain
   alt: Affiche festive « Viva Poly » de DZAÏR au Rolex Learning Center, entourée de photos de plats algériens.
+  en:
+    title: Vivapoly 2024
+    alt: Festive DZAÏR “Viva Poly” poster at the Rolex Learning Center, surrounded by photos of Algerian dishes.
 
 - id: semaine-associations-2024
   title: Semaine des associations 2024
@@ -58,6 +72,9 @@
   image: ../assets/events/semaine-associations-2024.jpg
   fit: contain
   alt: Affiche verte « Semaine des associations » invitant à déguster des saveurs algériennes, avec pizza carrée, cigares, un pot de pâte à tartiner El Mordjene et une boisson Hamoud.
+  en:
+    title: Associations Week 2024
+    alt: Green “Semaine des associations” (Associations Week) poster inviting people to taste Algerian flavours, with square pizza, cigares (rolled pastries), a jar of El Mordjene spread and a Hamoud drink.
 
 # --- Networking & Partages ---
 - id: networking-alumni-2026
@@ -69,6 +86,9 @@
   image: ../assets/events/networking-alumni-2026.jpg
   fit: contain
   alt: Affiche illustrée « Networking Event », le 23 avril 2026 à 19 h en salle ELA1, pour échanger avec des alumni et professeurs de l’EPFL et de l’ETH Zurich, suivi d’un apéro.
+  en:
+    title: Networking evening with EPFL and ETH Zurich alumni
+    alt: "Illustrated “Networking Event” poster: 23 April 2026 at 7 pm in room ELA1, a chance to meet alumni and professors from EPFL and ETH Zurich, followed by drinks."
 
 - id: entraide-post-epfl-2025
   title: Soirée entraide Post-EPFL
@@ -79,6 +99,9 @@
   image: ../assets/events/entraide-post-epfl-2025.jpeg
   fit: cover
   alt: Un intervenant présente devant un grand écran projetant une diapositive sur l’emploi, dans un auditoire.
+  en:
+    title: "Life after EPFL: peer-support evening"
+    alt: A speaker gives a talk in a lecture hall in front of a large screen showing a slide about employment.
 
 - id: dzair-x-turcopoly-2024
   title: Soirée culturelle DZAÏR x TURCOPOLY
@@ -89,6 +112,9 @@
   image: ../assets/events/dzair-x-turcopoly-2024.jpeg
   fit: contain
   alt: Affiche « Turquie et Algérie – soirée culturelle » avec les drapeaux algérien et turc entourés d’illustrations de thé, de café et de plats.
+  en:
+    title: DZAÏR x TURCOPOLY cultural evening
+    alt: "“Turquie et Algérie – soirée culturelle” (Turkey and Algeria – cultural evening) poster with the Algerian and Turkish flags surrounded by illustrations of tea, coffee and dishes."
 
 - id: projection-143-rue-du-desert-2024
   title: Projection du film « 143 rue du désert »
@@ -99,6 +125,9 @@
   image: ../assets/events/projection-143-rue-du-desert-2024.jpeg
   fit: contain
   alt: Affiche de la projection du film « 143 rue du désert » de Hassen Ferhani à La Grange, avec le portrait d’une femme assise.
+  en:
+    title: Screening of “143 Sahara Street”
+    alt: Poster for the screening of Hassen Ferhani’s film “143 rue du désert” at La Grange, with a portrait of a seated woman.
 
 - id: apero-dzair-x-apml-2023
   title: Apéro DZAÏR x APML
@@ -109,6 +138,9 @@
   image: ../assets/events/apero-dzair-x-apml-2023.jpeg
   fit: contain
   alt: Affiche « APML x DZAIR Game Apéro » illustrée de cartes à jouer, de dés, de jetons et d’un ballon de football.
+  en:
+    title: DZAÏR x APML apéro
+    alt: "“APML x DZAIR Game Apéro” poster illustrated with playing cards, dice, tokens and a football."
 
 # --- Célébrations & Sorties ---
 - id: randonnee-lac-de-taney-2026
@@ -120,6 +152,9 @@
   image: ../assets/events/randonnee-lac-de-taney-2026.jpg
   fit: cover
   alt: Groupe d’étudiants posant au bord du lac de Taney, entouré de montagnes et de forêts sous un ciel ensoleillé.
+  en:
+    title: Hike to Lac de Taney
+    alt: Group of students posing on the shore of Lac de Taney, surrounded by mountains and forests under a sunny sky.
 
 - id: randonnee-bretaye-2026
   title: Randonnée à Bretaye
@@ -130,6 +165,9 @@
   image: ../assets/events/randonnee-bretaye-2026.jpg
   fit: cover
   alt: Groupe d’étudiants souriants derrière un mur de neige, devant des sapins sous un ciel bleu, lors d’une randonnée à Bretaye.
+  en:
+    title: Hike to Bretaye
+    alt: Group of smiling students behind a wall of snow, in front of fir trees under a blue sky, on a hike to Bretaye.
 
 - id: celebration-1er-novembre-2025
   title: Célébration du 1er novembre
@@ -140,6 +178,9 @@
   image: ../assets/events/celebration-1er-novembre-2025.jpeg
   fit: contain
   alt: Affiche de la projection du film « La Bataille d’Alger » suivie d’un apéritif, en commémoration du 1er novembre 1954.
+  en:
+    title: Revolution Day celebration (1 November)
+    alt: Poster for a screening of the film “La Bataille d’Alger” (The Battle of Algiers) followed by drinks, commemorating 1 November 1954.
 
 - id: randonnee-stanserhorn-2025
   title: Randonnée au Stanserhorn
@@ -150,6 +191,10 @@
   image: ../assets/events/randonnee-stanserhorn-2025.jpeg
   fit: cover
   alt: Groupe d’étudiants assis à la proue d’un bateau battant pavillon suisse, sur un lac entouré de montagnes.
+  en:
+    title: Hike up the Stanserhorn
+    location: Stanserhorn, Nidwalden
+    alt: Group of students sitting at the bow of a boat flying the Swiss flag, on a lake surrounded by mountains.
 
 - id: randonnee-crans-montana-2025
   title: Randonnée à Crans-Montana
@@ -160,6 +205,9 @@
   image: ../assets/events/randonnee-crans-montana-2025.jpeg
   fit: cover
   alt: Étudiants assis dans l’herbe pour une pause pique-nique, face à des montagnes boisées sous un ciel nuageux.
+  en:
+    title: Hike in Crans-Montana
+    alt: Students sitting on the grass for a picnic break, facing wooded mountains under a cloudy sky.
 
 - id: randonnee-oeschinensee-2024
   title: Randonnée à l’Oeschinensee
@@ -170,6 +218,10 @@
   image: ../assets/events/randonnee-oeschinensee-2024.jpg
   fit: cover
   alt: Groupe d’étudiants assis et debout au bord de l’Oeschinensee, un lac turquoise entouré de falaises et de sapins.
+  en:
+    title: Hike to the Oeschinensee
+    location: Oeschinensee, Bern
+    alt: Group of students sitting and standing on the shore of the Oeschinensee, a turquoise lake surrounded by cliffs and fir trees.
 
 - id: ftour-ramadan-2025
   title: Ftour convivial Ramadan 2025
@@ -180,3 +232,6 @@
   image: ../assets/events/ftour-ramadan-2025.jpeg
   fit: contain
   alt: Affiche « Ramadan Iftar Dinner » de DZAÏR, décorée de lanternes, d’étoiles, de croissants de lune et du drapeau algérien.
+  en:
+    title: Ramadan iftar 2025
+    alt: DZAÏR “Ramadan Iftar Dinner” poster decorated with lanterns, stars, crescent moons and the Algerian flag.

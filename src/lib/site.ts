@@ -1,27 +1,30 @@
+import { INTL_LOCALE, LANGS, type Lang } from "../i18n/routes";
+
 export const SITE = {
   name: "DZAÏR",
-  title: "DZAÏR – Étudiants algériens en Suisse",
   legalName: "DZAIR – Association des étudiants algériens en Suisse",
-  description:
-    "DZAÏR rassemble les étudiants algériens en Suisse pour faciliter leur intégration, encourager l’entraide et créer un réseau actif.",
   email: "dzairassociation@epfl.ch",
   instagram: "https://www.instagram.com/dzair_suisse/",
   joinForm:
     "https://docs.google.com/forms/d/e/1FAIpQLSdeZDe7HzFiykEniiz7zmaKlktJakwYzi3iFuHTpvT_-iPmpQ/viewform?usp=header",
   epfl: "https://www.epfl.ch",
   unil: "https://www.unil.ch",
-  locale: "fr_CH",
 } as const;
 
-const monthFormatter = new Intl.DateTimeFormat("fr-CH", {
-  month: "long",
-  year: "numeric",
-  timeZone: "UTC",
-});
+const monthFormatters = Object.fromEntries(
+  LANGS.map((lang) => [
+    lang,
+    new Intl.DateTimeFormat(INTL_LOCALE[lang], {
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    }),
+  ]),
+) as Record<Lang, Intl.DateTimeFormat>;
 
-/** `2025-11-01` → « Novembre 2025 ». */
-export function formatMonth(date: Date): string {
-  const s = monthFormatter.format(date);
+/** `2025-11-01` → « Novembre 2025 » (fr) / “November 2025” (en). */
+export function formatMonth(date: Date, lang: Lang = "fr"): string {
+  const s = monthFormatters[lang].format(date);
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 

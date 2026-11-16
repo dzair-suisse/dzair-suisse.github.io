@@ -21,6 +21,18 @@ const eventSchema = ({ image }: SchemaContext) =>
     fit: z.enum(["contain", "cover"]).default("cover"),
     /** Texte alternatif descriptif (en français). */
     alt: z.string().min(10),
+    /**
+     * Version anglaise (facultative). Sans elle, la version anglaise du site
+     * affiche les textes français.
+     */
+    en: z
+      .object({
+        title: z.string().min(1),
+        /** Seulement si le lieu s’écrit autrement en anglais (« Berne » → « Bern »). */
+        location: z.string().min(1).optional(),
+        alt: z.string().min(10),
+      })
+      .optional(),
     /** Lien vers le post Instagram d’origine (événements synchronisés). */
     permalink: z.url().optional(),
   });

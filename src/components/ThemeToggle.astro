@@ -1,10 +1,13 @@
 ---
+import { useTranslations, type Lang } from "../i18n/utils";
 import Icon from "./Icon.astro";
 
 interface Props {
+  lang: Lang;
   class?: string;
 }
-const { class: className } = Astro.props;
+const { lang, class: className } = Astro.props;
+const t = useTranslations(lang);
 ---
 
 <button
@@ -15,9 +18,9 @@ const { class: className } = Astro.props;
   ]}
   data-theme-toggle
   aria-pressed="false"
-  title="Changer de thème"
+  title={t.theme.title}
 >
-  <span class="sr-only">Mode sombre</span>
+  <span class="sr-only">{t.theme.label}</span>
   <span class="theme-icon-sun">
     <Icon name="sun" />
   </span>

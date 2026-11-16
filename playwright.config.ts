@@ -13,6 +13,9 @@ export default defineConfig({
     : "list",
   use: {
     baseURL: `http://localhost:${PORT}`,
+    // French-speaking browser by default (no « also available in English »
+    // banner on French pages); tests that need another language set their own.
+    locale: "fr-CH",
     // Traces of failed tests in the CI report (with retries: 0, "on-first-retry"
     // would never record). Off locally: tracing ~10 parallel workers is slow.
     trace: process.env["CI"] ? "retain-on-failure" : "off",

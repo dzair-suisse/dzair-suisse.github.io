@@ -7,15 +7,28 @@ import montserratLatin from "@fontsource-variable/montserrat/files/montserrat-la
 import { ClientRouter } from "astro:transitions";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
+import LanguageBanner from "../components/LanguageBanner.astro";
 import SEO, { type Props as SEOProps } from "../components/SEO.astro";
+import { HTML_LANG } from "../i18n/routes";
+import { localizedPath, useTranslations } from "../i18n/utils";
+import { url } from "../lib/url";
 
-type Props = SEOProps;
+type Props = SEOProps & {
+  /**
+   * French home page only: send visitors who chose English (stored with the
+   * language switcher) to the English home page before first paint.
+   */
+  redirectToPreferred?: boolean;
+};
 
-const props = Astro.props;
+const { redirectToPreferred = false, ...props } = Astro.props;
+const { lang } = props;
+const t = useTranslations(lang);
+const englishHome = url(localizedPath("", "en"));
 ---
 
 <!doctype html>
-<html lang="fr" dir="ltr">
+<html lang={HTML_LANG[lang]} dir="ltr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -69,6 +82,53 @@ const props = Astro.props;
       })();
     </script>
 
+    {redirectToPreferred && <script is:inline define:vars={{ englishHome }}>
+      try {
+        if (localStorage.getItem("lang") === "en") {
+          document.documentElement.style.visibility = "hidden";
+          location.replace(englishHome + location.search + location.hash);
+        }
+      } catch {
+        /* storage unavailable */
+      }
+    </script>}
+
+    <!--
+      Language banner (see LanguageBanner.astro): shown before first paint when
+      the browser language is the other site language and the visitor has
+      neither chosen a language nor dismissed the banner.
+    -->
+    <script is:inline>
+      (() => {
+        const read = (key) => {
+          try {
+            return localStorage.getItem(key);
+          } catch {
+            return null;
+          }
+        };
+        const apply = (doc) => {
+          const root = doc.documentElement;
+          const other = root.lang === "en" ? "fr" : "en";
+          const browser = (navigator.language || "").toLowerCase();
+          if (
+            !read("lang") &&
+            !read("lang-banner-dismissed") &&
+            browser.startsWith(other)
+          )
+            root.dataset.langBanner = "";
+          else delete root.dataset.langBanner;
+        };
+        apply(document);
+        if (!window.__dzairLangBanner) {
+          window.__dzairLangBanner = true;
+          document.addEventListener("astro:before-swap", (e) =>
+            apply(e.newDocument),
+          );
+        }
+      })();
+    </script>
+
     <!-- Latin subsets of the heading (LCP) and body fonts. -->
     <link
       rel="preload"
@@ -90,12 +150,13 @@ const props = Astro.props;
   </head>
   <body>
     <a href="#contenu" class="skip-link">
-      Aller au contenu
+      {t.a11y.skipLink}
     </a>
-    <Header />
+    {!props.noindex && <LanguageBanner lang={lang} path={props.path ?? ""} />}
+    <Header lang={lang} />
     <main id="contenu" tabindex="-1" class="outline-none">
       <slot />
     </main>
-    <Footer />
+    <Footer lang={lang} />
   </body>
 </html>

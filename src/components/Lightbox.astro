@@ -1,5 +1,12 @@
 ---
+import { useTranslations, type Lang } from "../i18n/utils";
 import Icon from "./Icon.astro";
+
+interface Props {
+  lang: Lang;
+}
+
+const t = useTranslations(Astro.props.lang);
 ---
 
 <dialog
@@ -17,16 +24,16 @@ import Icon from "./Icon.astro";
   <div class="absolute end-3 bottom-3 flex gap-2">
     <button type="button" class="lightbox-btn" data-lightbox-prev>
       <Icon name="arrow-left" />
-      <span class="sr-only">Photo précédente</span>
+      <span class="sr-only">{t.lightbox.previous}</span>
     </button>
     <button type="button" class="lightbox-btn" data-lightbox-next>
       <Icon name="arrow-right" />
-      <span class="sr-only">Photo suivante</span>
+      <span class="sr-only">{t.lightbox.next}</span>
     </button>
     <form method="dialog">
       <button type="submit" class="lightbox-btn" data-lightbox-close autofocus>
         <Icon name="close" />
-        <span class="sr-only">Fermer</span>
+        <span class="sr-only">{t.lightbox.close}</span>
       </button>
     </form>
   </div>

@@ -326,3 +326,220 @@ test.describe("Mode sombre", () => {
     });
   }
 });
+
+/** Clicks a language in the header switcher (in the menu on phones). */
+async function switchLanguage(
+  page: Page,
+  isMobile: boolean,
+  name: "English" | "Français",
+  // Links read « EN (English) » / « FR (Français) ».
+): Promise<void> {
+  if (isMobile) {
+    await page
+      .getByRole("button", { name: /Ouvrir le menu|Open menu/ })
+      .click();
+    await page
+      .getByRole("dialog", { name: "Menu" })
+      .getByRole("group", { name: "Langue / Language" })
+      .getByRole("link", { name: new RegExp(name) })
+      .click();
+  } else {
+    await page
+      .getByRole("banner")
+      .getByRole("group", { name: "Langue / Language" })
+      .getByRole("link", { name: new RegExp(name) })
+      .click();
+  }
+}
+
+test.describe("Version anglaise", () => {
+  const PAGES = [
+    { path: "en/", h1: "Algerian students in Switzerland", fr: "" },
+    { path: "en/events/", h1: "Our events", fr: "evenements/" },
+  ];
+
+  for (const { path, h1, fr } of PAGES) {
+    test(`/${path} se charge en anglais, sans erreur`, async ({ page }) => {
+      const errors = trackErrors(page);
+      await page.goto(`${BASE}${path}`);
+      await expect(page.locator("html")).toHaveAttribute("lang", "en");
+      await expect(page.getByRole("heading", { level: 1 })).toContainText(h1);
+      await expect(page.locator("link[rel=canonical]")).toHaveAttribute(
+        "href",
+        `https://dzair-suisse.github.io/${path}`,
+      );
+      for (const [lang, target] of [
+        ["fr", fr],
+        ["en", path],
+        ["x-default", fr],
+      ] as const) {
+        await expect(
+          page.locator(`link[rel=alternate][hreflang="${lang}"]`),
+        ).toHaveAttribute("href", `https://dzair-suisse.github.io/${target}`);
+      }
+      await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute(
+        "content",
+        "en_GB",
+      );
+      expect(errors).toEqual([]);
+    });
+
+    test(`pas de violation d'accessibilité grave sur /${path} (clair et sombre)`, async ({
+      page,
+    }) => {
+      for (const scheme of ["light", "dark"] as const) {
+        await page.emulateMedia({ colorScheme: scheme });
+        await page.goto(`${BASE}${path}`);
+        await expect(page.locator("html")).toHaveAttribute(
+          "data-theme",
+          scheme,
+        );
+        await expectNoSeriousA11yViolations(page);
+      }
+    });
+  }
+
+  test("les pages françaises annoncent leur version anglaise", async ({
+    page,
+  }) => {
+    await page.goto(`${BASE}evenements/`);
+    await expect(
+      page.locator('link[rel=alternate][hreflang="en"]'),
+    ).toHaveAttribute("href", "https://dzair-suisse.github.io/en/events/");
+    await expect(
+      page.locator('link[rel=alternate][hreflang="fr"]'),
+    ).toHaveAttribute("href", "https://dzair-suisse.github.io/evenements/");
+  });
+
+  test("les événements sont traduits, filtre et annonce compris", async ({
+    page,
+  }) => {
+    await page.goto(`${BASE}en/events/`);
+    await expect(page.locator("#events-list article")).toHaveCount(TOTAL);
+    await expect(page.getByRole("heading", { level: 2 })).toHaveText([
+      "EPFL / UNIL events",
+      "Networking & meet-ups",
+      "Celebrations & outings",
+    ]);
+    await expect(
+      page.getByRole("heading", { name: "Hike to Lac de Taney" }),
+    ).toBeVisible();
+    await expect(page.getByText("May 2026").first()).toBeVisible();
+    await page.getByRole("radio", { name: /Networking/ }).check();
+    await expect(page.getByRole("status")).toHaveText(
+      `${COUNT.networking} events shown`,
+    );
+  });
+
+  test("le sélecteur de langue bascule l'accueil FR → EN → FR", async ({
+    page,
+    isMobile,
+  }) => {
+    const errors = trackErrors(page);
+    await page.goto(BASE);
+    await switchLanguage(page, isMobile, "English");
+    await expect(page).toHaveURL(/:\d+\/en\/$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await switchLanguage(page, isMobile, "Français");
+    await expect(page).toHaveURL(/:\d+\/$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+    expect(errors).toEqual([]);
+  });
+
+  test("le sélecteur garde ?categorie= sur la page événements", async ({
+    page,
+    isMobile,
+  }) => {
+    const errors = trackErrors(page);
+    await page.goto(`${BASE}evenements/?categorie=networking`);
+    const visibleCards = page.locator("#events-list article:visible");
+    await expect(visibleCards).toHaveCount(COUNT.networking);
+
+    await switchLanguage(page, isMobile, "English");
+    await expect(page).toHaveURL(/\/en\/events\/\?categorie=networking$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(visibleCards).toHaveCount(COUNT.networking);
+
+    // A filter chosen after the page loaded is carried over too.
+    await page.getByRole("radio", { name: /Celebrations/ }).check();
+    await switchLanguage(page, isMobile, "Français");
+    await expect(page).toHaveURL(/\/evenements\/\?categorie=celebrations$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+    await expect(visibleCards).toHaveCount(COUNT.celebrations);
+    expect(errors).toEqual([]);
+  });
+
+  test("le sélecteur suit les navigations côté client", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "Navigation de bureau");
+    await page.goto(`${BASE}en/`);
+    await page
+      .getByRole("navigation", { name: "Main navigation" })
+      .getByRole("link", { name: "Events" })
+      .click();
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Our events" }),
+    ).toBeVisible();
+    await switchLanguage(page, isMobile, "Français");
+    await expect(page).toHaveURL(/\/evenements\/$/);
+  });
+
+  test("la langue choisie est mémorisée sur l'accueil", async ({
+    page,
+    isMobile,
+  }) => {
+    await page.goto(`${BASE}en/`);
+    await switchLanguage(page, isMobile, "English");
+    await expect(page).toHaveURL(/\/en\/$/);
+    await expect
+      .poll(() => page.evaluate(() => localStorage.getItem("lang")))
+      .toBe("en");
+
+    // French home → English home (query and hash kept).
+    await page.goto(`${BASE}?x=1#contact`);
+    await expect(page).toHaveURL(/\/en\/\?x=1#contact$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+
+    // Other French pages are never redirected.
+    await page.goto(`${BASE}evenements/`);
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+
+    // Choosing French again cancels the redirect.
+    await switchLanguage(page, isMobile, "Français");
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+    await page.goto(BASE);
+    await expect(page).toHaveURL(/:\d+\/$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+  });
+
+  test("un navigateur anglophone voit un bandeau, sans redirection", async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ locale: "en-GB" });
+    const page = await context.newPage();
+    await page.goto(BASE);
+    await expect(page).toHaveURL(/:\d+\/$/);
+    const banner = page.locator("aside[data-lang-banner]");
+    await expect(banner).toBeVisible();
+    await expect(banner).toHaveAttribute("lang", "en");
+    await page.getByRole("button", { name: "Dismiss this message" }).click();
+    await expect(banner).toBeHidden();
+    await page.reload();
+    await expect(banner).toBeHidden();
+    await context.close();
+  });
+
+  test("un navigateur francophone voit le bandeau sur les pages anglaises", async ({
+    page,
+  }) => {
+    await page.goto(`${BASE}en/events/?categorie=networking`);
+    const banner = page.locator("aside[data-lang-banner]");
+    await expect(banner).toBeVisible();
+    await banner.getByRole("link", { name: "Afficher en français" }).click();
+    await expect(page).toHaveURL(/\/evenements\/\?categorie=networking$/);
+    // A choice was made: no more banner.
+    await expect(page.locator("aside[data-lang-banner]")).toBeHidden();
+  });
+});

@@ -1,0 +1,83 @@
+---
+/**
+ * "This site is also available in English" (or the French mirror). Hidden by
+ * default; the inline script in BaseLayout reveals it (`data-lang-banner` on
+ * <html>) when the browser language is the other site language and the
+ * visitor has neither picked a language nor dismissed the banner. Never
+ * redirects on its own.
+ */
+import { HTML_LANG } from "../i18n/routes";
+import {
+  localizedPath,
+  otherLang,
+  useTranslations,
+  type Lang,
+} from "../i18n/utils";
+import { url } from "../lib/url";
+import Icon from "./Icon.astro";
+
+interface Props {
+  lang: Lang;
+  /** Current page path relative to the base. */
+  path: string;
+}
+
+const { lang, path } = Astro.props;
+const other = otherLang(lang);
+// The banner speaks the other language.
+const t = useTranslations(other);
+const href = url(localizedPath(path, other));
+---
+
+<aside
+  class="lang-banner bg-surface-2 text-ink border-line border-b text-sm"
+  lang={HTML_LANG[other]}
+  aria-label={t.lang.bannerLabel}
+  data-lang-banner
+>
+  <div class="container-page flex flex-wrap items-center gap-x-4 gap-y-1 py-1.5">
+    <p class="flex-1">{t.lang.bannerText}</p>
+    <a
+      href={href}
+      hreflang={HTML_LANG[other]}
+      class="text-primary inline-flex min-h-11 items-center gap-1.5 font-semibold underline underline-offset-4"
+      data-lang-switch={other}
+      data-lang-href={href}
+      data-astro-reload
+    >
+      {t.lang.bannerAction}
+      <Icon name="arrow-right" size={16} />
+    </a>
+    <button
+      type="button"
+      class="hover:bg-surface inline-grid size-11 place-items-center rounded-full"
+      data-lang-banner-dismiss
+    >
+      <Icon name="close" size={18} />
+      <span class="sr-only">{t.lang.bannerDismiss}</span>
+    </button>
+  </div>
+</aside>
+
+<style>
+  .lang-banner {
+    display: none;
+  }
+  :global(html[data-lang-banner]) .lang-banner {
+    display: block;
+  }
+</style>
+
+<script>
+  document.addEventListener("click", (event) => {
+    const target = event.target as Element | null;
+    if (!target?.closest("[data-lang-banner-dismiss]")) return;
+    try {
+      localStorage.setItem("lang-banner-dismissed", "1");
+    } catch {
+      /* storage unavailable */
+    }
+    delete document.documentElement.dataset["langBanner"];
+    document.getElementById("contenu")?.focus({ preventScroll: true });
+  });
+</script>

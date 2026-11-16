@@ -26,3 +26,6 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# worktrees des agents Claude Code
+.claude/worktrees/
