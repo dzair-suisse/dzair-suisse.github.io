@@ -1,7 +1,22 @@
 import AxeBuilder from "@axe-core/playwright";
+import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
+import YAML from "yaml";
 
 const BASE = "/dzair_epfl/";
+
+/** Event counts read from the content files, so adding an event never breaks the tests. */
+const EVENTS = [
+  "src/content/events.yaml",
+  "src/content/instagram-events.yaml",
+].flatMap(
+  (f) => (YAML.parse(readFileSync(f, "utf8")) ?? []) as { category: string }[],
+);
+const TOTAL = EVENTS.length;
+const COUNT = {
+  networking: EVENTS.filter((e) => e.category === "networking").length,
+  celebrations: EVENTS.filter((e) => e.category === "celebrations").length,
+};
 
 /** Collects console errors and uncaught exceptions for the current page. */
 function trackErrors(page: Page): string[] {
@@ -155,11 +170,13 @@ test.describe("Navigation", () => {
 
     // Filter (scripts re-bound after the swap).
     const visibleCards = page.locator("#events-list article:visible");
-    await expect(visibleCards).toHaveCount(12);
+    await expect(visibleCards).toHaveCount(TOTAL);
     await page.getByRole("radio", { name: /Célébrations/ }).check();
-    await expect(visibleCards).toHaveCount(4);
+    await expect(visibleCards).toHaveCount(COUNT.celebrations);
     await expect(page).toHaveURL(/categorie=celebrations/);
-    await expect(page.getByRole("status")).toHaveText("4 événements affichés");
+    await expect(page.getByRole("status")).toHaveText(
+      `${COUNT.celebrations} événements affichés`,
+    );
 
     // Lightbox opens and closes.
     await visibleCards.first().locator("a[data-lightbox]").click();
@@ -225,10 +242,10 @@ test.describe("Navigation", () => {
 });
 
 test.describe("Événements", () => {
-  test("liste les 12 événements, groupés par catégorie", async ({ page }) => {
+  test("liste tous les événements, groupés par catégorie", async ({ page }) => {
     const errors = trackErrors(page);
     await page.goto(`${BASE}evenements/`);
-    await expect(page.locator("#events-list article")).toHaveCount(12);
+    await expect(page.locator("#events-list article")).toHaveCount(TOTAL);
     await expect(page.getByRole("heading", { level: 2 })).toHaveText([
       "Événements EPFL / UNIL",
       "Networking & Partages",
@@ -238,22 +255,24 @@ test.describe("Événements", () => {
     const sources = page.locator(
       "#events-list picture source[type='image/avif']",
     );
-    await expect(sources).toHaveCount(12);
+    await expect(sources).toHaveCount(TOTAL);
     expect(errors).toEqual([]);
   });
 
   test("le filtre par catégorie fonctionne", async ({ page }) => {
     await page.goto(`${BASE}evenements/`);
     const visibleCards = page.locator("#events-list article:visible");
-    await expect(visibleCards).toHaveCount(12);
+    await expect(visibleCards).toHaveCount(TOTAL);
 
     await page.getByRole("radio", { name: /Networking/ }).check();
-    await expect(visibleCards).toHaveCount(4);
+    await expect(visibleCards).toHaveCount(COUNT.networking);
     await expect(page).toHaveURL(/categorie=networking/);
-    await expect(page.getByRole("status")).toHaveText("4 événements affichés");
+    await expect(page.getByRole("status")).toHaveText(
+      `${COUNT.networking} événements affichés`,
+    );
 
     await page.getByRole("radio", { name: /Tous/ }).check();
-    await expect(visibleCards).toHaveCount(12);
+    await expect(visibleCards).toHaveCount(TOTAL);
   });
 
   test("le filtre fonctionne sans JavaScript", async ({ browser }) => {
@@ -261,9 +280,9 @@ test.describe("Événements", () => {
     const page = await context.newPage();
     await page.goto(`${BASE}evenements/`);
     const visibleCards = page.locator("#events-list article:visible");
-    await expect(visibleCards).toHaveCount(12);
+    await expect(visibleCards).toHaveCount(TOTAL);
     await page.locator("label.chip", { hasText: "Célébrations" }).click();
-    await expect(visibleCards).toHaveCount(4);
+    await expect(visibleCards).toHaveCount(COUNT.celebrations);
     await context.close();
   });
 
