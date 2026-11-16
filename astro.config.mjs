@@ -3,6 +3,7 @@ import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import pruneUnusedAssets from "./src/integrations/prune-unused-assets.ts";
+import { SITE_ORIGIN } from "./src/lib/origin.ts";
 import {
   DEFAULT_LANG,
   HTML_LANG,
@@ -10,8 +11,8 @@ import {
   localizedPath,
 } from "./src/i18n/routes.ts";
 
-// Site d’organisation GitHub Pages : servi à la racine du domaine.
-const SITE = "https://dzair-suisse.github.io";
+// Adresse publique du site (voir src/lib/origin.ts pour changer de domaine).
+const SITE = SITE_ORIGIN;
 
 // https://docs.astro.build/en/reference/configuration-reference/
 export default defineConfig({
