@@ -4,6 +4,8 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    commit-message:
+      prefix: "chore(deps)"
     groups:
       minor-and-patch:
         update-types: [minor, patch]
@@ -11,7 +13,12 @@ updates:
       # Astro >= 7.4 requires Node >= 22.23.4 (see README): stay on 7.3.x.
       - dependency-name: astro
         versions: [">= 7.4.0"]
+      # @astrojs/check does not accept TypeScript 7 yet.
+      - dependency-name: typescript
+        versions: [">= 7.0.0"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    commit-message:
+      prefix: "ci(deps)"
