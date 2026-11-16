@@ -1,6 +1,5 @@
-// Regenerates the favicon PNGs and the Open Graph image from the brand sources.
+// Regenerates the favicons, app icons and the Open Graph image from the brand logo.
 // Usage: node scripts/generate-icons.mjs
-import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
@@ -8,15 +7,60 @@ const root = new URL("../", import.meta.url);
 const pub = (name) => fileURLToPath(new URL(`public/${name}`, root));
 const src = (name) => fileURLToPath(new URL(name, root));
 
-const svg = await readFile(pub("favicon.svg"));
+const LOGO = src("src/assets/brand/logo-dzair.png");
 
-for (const [name, size] of [
-  ["favicon.png", 48],
-  ["apple-touch-icon.png", 180],
-  ["icon-192.png", 192],
-  ["icon-512.png", 512],
+/**
+ * Square icon cut from the brand logo, on a white rounded square.
+ * - "full": map of Algeria + « Dzaïr » + flags (large icons: home screen, PWA);
+ * - "word": « Dzaïr » + flags only, readable at browser-tab size.
+ * The tagline is left out: unreadable at icon sizes.
+ */
+const CROPS = {
+  full: { left: 140, top: 0, width: 815, height: 412 },
+  word: { left: 295, top: 125, width: 655, height: 285 },
+};
+
+async function squareIcon(crop, size) {
+  const pad = Math.round(size * 0.078);
+  const radius = Math.round(size * 0.22);
+  const inner = await sharp(await sharp(LOGO).extract(crop).trim().toBuffer())
+    .resize(size - 2 * pad, size - 2 * pad, { fit: "inside" })
+    .toBuffer();
+  const { width = 0, height = 0 } = await sharp(inner).metadata();
+  return sharp({
+    create: {
+      width: size,
+      height: size,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    },
+  })
+    .composite([
+      {
+        input: Buffer.from(
+          `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="${size}" height="${size}" rx="${radius}" fill="#ffffff"/></svg>`,
+        ),
+      },
+      {
+        input: inner,
+        left: Math.round((size - width) / 2),
+        top: Math.round((size - height) / 2),
+      },
+    ])
+    .png({ compressionLevel: 9 })
+    .toBuffer();
+}
+
+for (const [name, size, crop] of [
+  ["favicon-32.png", 32, "word"],
+  ["favicon.png", 48, "word"],
+  ["apple-touch-icon.png", 180, "full"],
+  ["icon-192.png", 192, "full"],
+  ["icon-512.png", 512, "full"],
 ]) {
-  await sharp(svg, { density: 1200 })
+  // Draw large, then downscale: sharper small icons.
+  const big = await squareIcon(CROPS[crop], Math.max(size, 512));
+  await sharp(big)
     .resize(size, size)
     .png({ compressionLevel: 9 })
     .toFile(pub(name));
