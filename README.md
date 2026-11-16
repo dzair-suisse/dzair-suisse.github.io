@@ -22,16 +22,16 @@ Node.js 22 (voir `.nvmrc`, ≥ 22.12) et npm.
 
 ## Commandes
 
-| Commande               | Action                                              |
-| ---------------------- | --------------------------------------------------- |
-| `npm ci`               | Installe les dépendances                            |
-| `npm run dev`          | Serveur de développement : <http://localhost:4321/> |
-| `npm run build`        | Génère le site dans `dist/`                         |
-| `npm run preview`      | Sert le build localement                            |
-| `npm run check`        | Vérification TypeScript / Astro (`astro check`)     |
-| `npm run format`       | Formate le code (Prettier)                          |
-| `npm run format:check` | Vérifie le formatage                                |
-| `npm test`             | Tests Playwright (lancer `npm run build` avant)     |
+| Commande               | Action                                                  |
+| ---------------------- | ------------------------------------------------------- |
+| `npm ci`               | Installe les dépendances                                |
+| `npm run dev`          | Serveur de développement : <http://localhost:4321/>     |
+| `npm run build`        | Génère le site dans `dist/`                             |
+| `npm run preview`      | Sert le build localement                                |
+| `npm run check`        | Vérification TypeScript / Astro (`astro check`)         |
+| `npm run format`       | Formate le code (Prettier)                              |
+| `npm run format:check` | Vérifie le formatage                                    |
+| `npm test`             | Tests unitaires puis E2E (lancer `npm run build` avant) |
 
 Première utilisation des tests : `npx playwright install chromium`.
 
@@ -135,6 +135,29 @@ rediriger les appels.
 
 Le site est servi à la racine. Pour tout lien interne ou fichier de `public/`, utiliser
 `url()` de `src/lib/url.ts` (par ex. `url("evenements/")`), jamais un chemin commençant par `/`.
+
+## Intégration continue
+
+Le workflow `.github/workflows/deploy.yml` tourne sur chaque pull request et chaque push sur `main`
+(jobs en parallèle, exécutions obsolètes d’une PR annulées) :
+
+| Job          | Vérification                                                                   | En local            |
+| ------------ | ------------------------------------------------------------------------------ | ------------------- |
+| `Lint`       | Prettier ; commitlint (Conventional Commits) sur les commits et le titre de PR | `npm run lint`      |
+| `Typecheck`  | `astro check`                                                                  | `npm run check`     |
+| `Unit tests` | Vitest : `src/lib`, `src/i18n`, helpers Instagram, validité des événements     | `npm run test:unit` |
+| `Audit`      | `npm audit --omit=dev --audit-level=high`                                      | idem                |
+| `Build`      | `astro build`, `dist/` publié comme artefact                                   | `npm run build`     |
+| `E2E (…)`    | Playwright + axe sur le build, Chromium bureau et mobile                       | `npm run test:e2e`  |
+| `Deploy`     | Déploiement GitHub Pages (push sur `main` uniquement, si tout est vert)        | —                   |
+
+`npm run ci` enchaîne tout en local. La synchronisation Instagram lance aussi les tests unitaires et
+E2E (Chromium) avant de commiter. Dependabot propose chaque semaine les mises à jour npm (groupées)
+et GitHub Actions ; Astro reste en 7.3.x.
+
+**Protection de branche recommandée pour `main`** (_Settings → Branches_, à activer à la main) :
+exiger une pull request ; exiger les status checks `Lint`, `Typecheck`, `Unit tests`, `Audit`,
+`Build`, `E2E (chromium)`, `E2E (mobile)` ; interdire les force-push.
 
 ## Déploiement
 

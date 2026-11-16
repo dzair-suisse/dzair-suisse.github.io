@@ -24,10 +24,18 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
-import YAML from "yaml";
 import { z } from "zod";
 import { ui } from "../src/i18n/ui.ts";
 import { CATEGORIES } from "../src/lib/categories.ts";
+import {
+  appendEvents,
+  imageUrlOf,
+  monthDate,
+  readYamlList,
+  slugify,
+  type EventRecord,
+  type IgPost,
+} from "./lib/instagram.ts";
 
 const ROOT = process.cwd();
 const MANUAL_FILE = path.join(ROOT, "src/content/events.yaml");
@@ -39,23 +47,6 @@ const GRAPH = process.env.INSTAGRAM_GRAPH_URL ?? "https://graph.instagram.com";
 const MODEL = "claude-opus-5-5";
 
 // ---------------------------------------------------------------- types
-
-interface IgChild {
-  media_type: string;
-  media_url?: string;
-  thumbnail_url?: string;
-}
-
-interface IgPost {
-  id: string;
-  caption?: string;
-  media_type: "IMAGE" | "VIDEO" | "CAROUSEL_ALBUM";
-  media_url?: string;
-  thumbnail_url?: string;
-  permalink: string;
-  timestamp: string;
-  children?: { data: IgChild[] };
-}
 
 type PostStatus = "event" | "not-event" | "duplicate" | "refused";
 
@@ -71,21 +62,6 @@ interface KnownEvent {
   title: string;
   date: string;
   location: string;
-}
-
-interface EventRecord {
-  id: string;
-  title: string;
-  date: string;
-  location: string;
-  campus: "EPFL" | "UNIL" | "Hors campus";
-  category: (typeof CATEGORIES)[number];
-  image: string;
-  fit: "contain" | "cover";
-  alt: string;
-  /** English version, shown on the English site. */
-  en: { title: string; alt: string };
-  permalink: string;
 }
 
 // ---------------------------------------------------------------- Claude
@@ -223,16 +199,6 @@ async function fetchPosts(token: string, max: number): Promise<IgPost[]> {
   return posts.slice(0, max);
 }
 
-function imageUrlOf(post: IgPost): string | undefined {
-  if (post.media_type === "CAROUSEL_ALBUM") {
-    const first = post.children?.data[0];
-    return first?.media_type === "VIDEO"
-      ? first.thumbnail_url
-      : first?.media_url;
-  }
-  return post.media_type === "VIDEO" ? post.thumbnail_url : post.media_url;
-}
-
 async function download(url: string) {
   const res = await fetch(url);
   if (!res.ok)
@@ -247,32 +213,6 @@ async function download(url: string) {
   return { bytes, mediaType, ext } as const;
 }
 
-function slugify(text: string): string {
-  return text
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 60);
-}
-
-/** Normalise to the first day of the month (only month + year are shown). */
-function monthDate(raw: string, fallback: string): string {
-  const m = /^(\d{4})-(\d{2})/.exec(raw) ?? /^(\d{4})-(\d{2})/.exec(fallback);
-  return m ? `${m[1]}-${m[2]}-01` : fallback.slice(0, 7) + "-01";
-}
-
-async function readYamlList<T>(file: string): Promise<T[]> {
-  try {
-    const parsed: unknown = YAML.parse(await readFile(file, "utf8"));
-    return Array.isArray(parsed) ? (parsed as T[]) : [];
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
-    throw error;
-  }
-}
-
 async function readState(): Promise<State> {
   try {
     return JSON.parse(await readFile(STATE_FILE, "utf8")) as State;
@@ -281,21 +221,6 @@ async function readState(): Promise<State> {
       return { posts: {} };
     throw error;
   }
-}
-
-/**
- * Appends new entries without re-serialising existing ones, so manual edits
- * (and comments) in the YAML file are preserved byte for byte.
- */
-async function appendEvents(records: EventRecord[]): Promise<void> {
-  if (records.length === 0) return;
-  const current = await readFile(EVENTS_FILE, "utf8").catch(() => "");
-  const block = YAML.stringify(records, { lineWidth: 0 });
-  const isEmptyList = (await readYamlList(EVENTS_FILE)).length === 0;
-  const next = isEmptyList
-    ? current.replace(/^\[\]\s*$/m, "").trimEnd() + "\n\n" + block
-    : current.trimEnd() + "\n\n" + block;
-  await writeFile(EVENTS_FILE, next.trimStart());
 }
 
 async function refreshToken(token: string): Promise<void> {
@@ -451,7 +376,7 @@ async function main(): Promise<void> {
     }
   }
 
-  await appendEvents(added);
+  await appendEvents(EVENTS_FILE, added);
   await writeFile(STATE_FILE, JSON.stringify(state, null, 2) + "\n");
   console.log(`${added.length} événement(s) ajouté(s).`);
 

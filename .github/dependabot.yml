@@ -1,0 +1,17 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Astro >= 7.4 requires Node >= 22.23.4 (see README): stay on 7.3.x.
+      - dependency-name: astro
+        versions: [">= 7.4.0"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
