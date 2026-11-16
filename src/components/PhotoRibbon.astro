@@ -1,0 +1,109 @@
+---
+/**
+ * Decorative ribbon of every event photo, scrolling in two rows in opposite
+ * directions. Hidden from assistive technology (the photos and their alt
+ * texts are on the events page); static and scrollable with reduced motion.
+ */
+import { Picture } from "astro:assets";
+import type { EventEntry } from "../lib/events";
+
+interface Props {
+  events: EventEntry[];
+}
+
+const { events } = Astro.props;
+const half = Math.ceil(events.length / 2);
+const rows = [events.slice(0, half), events.slice(half)].filter(
+  (row) => row.length > 0,
+);
+---
+
+<div class="ribbon" aria-hidden="true">
+  {rows.map((row, i) => (
+    <div class="ribbon-row" data-direction={i % 2 ? "reverse" : "forward"}>
+      {/* The track holds the row twice so the loop is seamless. */}
+      <ul class="ribbon-track">
+        {[...row, ...row].map((event) => (
+          <li class="ribbon-item" data-fit={event.data.fit}>
+            <Picture
+              src={event.data.image}
+              alt=""
+              formats={["avif"]}
+              fallbackFormat="webp"
+              widths={[220, 330]}
+              sizes="11rem"
+              loading="lazy"
+              class:list={[
+                "size-full",
+                event.data.fit === "contain"
+                  ? "object-contain"
+                  : "object-cover",
+              ]}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
+  ))}
+</div>
+
+<style>
+  .ribbon {
+    display: grid;
+    gap: 1rem;
+    overflow: hidden;
+    mask-image: linear-gradient(
+      90deg,
+      transparent,
+      #000 8%,
+      #000 92%,
+      transparent
+    );
+  }
+  .ribbon-row {
+    display: flex;
+    overflow: hidden;
+  }
+  .ribbon-track {
+    display: flex;
+    flex-shrink: 0;
+    gap: 1rem;
+    padding-inline-end: 1rem;
+  }
+  .ribbon-item {
+    flex-shrink: 0;
+    inline-size: 11rem;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: 1rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+  }
+  .ribbon-item[data-fit="contain"] {
+    background: color-mix(in oklch, var(--sage) 14%, var(--bg-soft));
+  }
+  .ribbon-row:nth-child(even) .ribbon-item {
+    rotate: 1.5deg;
+  }
+  .ribbon-row:nth-child(odd) .ribbon-item {
+    rotate: -1.5deg;
+  }
+
+  @keyframes ribbon {
+    to {
+      translate: -50% 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .ribbon-track {
+      animation: ribbon 90s linear infinite;
+    }
+    .ribbon-row[data-direction="reverse"] .ribbon-track {
+      animation-direction: reverse;
+    }
+    .ribbon:hover .ribbon-track {
+      animation-play-state: paused;
+    }
+  }
+</style>

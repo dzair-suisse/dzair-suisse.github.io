@@ -7,6 +7,8 @@ import logo from "../../assets/brand/logo-dzair.png";
 import EventCard from "../EventCard.astro";
 import Icon, { type IconName } from "../Icon.astro";
 import Lightbox from "../Lightbox.astro";
+import PhotoRibbon from "../PhotoRibbon.astro";
+import Zellige from "../Zellige.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getSortedEvents } from "../../lib/events";
 import { SITE } from "../../lib/site";
@@ -23,7 +25,30 @@ const t = useTranslations(lang);
 const path = localizedPath("", lang);
 const eventsUrl = url(localizedPath("evenements/", lang));
 
-const latest = (await getSortedEvents()).slice(0, 3);
+const allEvents = await getSortedEvents();
+const latest = allEvents.slice(0, 3);
+
+/** Key figures, all derived from the event files (nothing typed by hand). */
+const stats: { value: number; label: string; animate: boolean }[] = [
+  { value: allEvents.length, label: t.home.stats.events, animate: true },
+  {
+    value: allEvents.filter((e) => e.data.category === "celebrations").length,
+    label: t.home.stats.celebrations,
+    animate: true,
+  },
+  {
+    value: new Set(
+      allEvents.map((e) => e.data.campus).filter((c) => c !== "Hors campus"),
+    ).size,
+    label: t.home.stats.campuses,
+    animate: true,
+  },
+  {
+    value: Math.min(...allEvents.map((e) => e.data.date.getUTCFullYear())),
+    label: t.home.stats.firstYear,
+    animate: false,
+  },
+];
 
 const values: { icon: IconName; title: string; text: string }[] = [
   { icon: "compass", ...t.home.values.integration },
@@ -64,7 +89,9 @@ const webPage = {
     <div
       aria-hidden="true"
       class="hero-glow pointer-events-none absolute inset-0 -z-10"
-    ></div>
+    >
+      <Zellige id="zellige-hero" class="hero-zellige" size={72} />
+    </div>
     <div class="container-page grid items-center gap-12 pt-12 pb-20 md:pt-20 lg:grid-cols-[1.15fr_1fr] lg:pb-28">
       <div>
         <p class="eyebrow mb-5">{t.site.recognised}</p>
@@ -147,6 +174,33 @@ const webPage = {
     </div>
   </section>
 
+  <!-- Chiffres clés ---------------------------------------------------- -->
+  <section aria-label={t.home.stats.label} class="pb-16 md:pb-20">
+    <div class="container-page">
+      <dl class="stats card reveal">
+        {stats.map((stat) => (
+          <div class="stat">
+            <dt class="text-muted text-sm font-medium">{stat.label}</dt>
+            <dd class="stat-value font-display text-ink">
+              {stat.animate ? (
+                <>
+                  <span
+                    class="counter"
+                    style={`--target: ${stat.value}`}
+                    aria-hidden="true"
+                  />
+                  <span class="sr-only">{stat.value}</span>
+                </>
+              ) : (
+                stat.value
+              )}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
   <!-- Qui sommes-nous -------------------------------------------------- -->
   <section
     id="quisommesnous"
@@ -161,8 +215,14 @@ const webPage = {
         <p class="text-muted mt-5 text-lg">{t.home.aboutLead}</p>
       </div>
       <ul class="values mt-12 grid gap-5 md:grid-cols-3">
-        {values.map((value) => (
-          <li class="value-card card reveal p-7">
+        {values.map((value, i) => (
+          <li class="value-card card reveal relative p-7">
+            <span
+              aria-hidden="true"
+              class="value-index font-display absolute end-6 top-5"
+            >
+              {String(i + 1).padStart(2, "0")}
+            </span>
             <span class="bg-surface-2 text-primary mb-6 inline-grid size-14 place-items-center rounded-2xl">
               <Icon name={value.icon} size={28} />
             </span>
@@ -172,6 +232,25 @@ const webPage = {
         ))}
       </ul>
     </div>
+  </section>
+
+  <!-- En images -------------------------------------------------------- -->
+  <section
+    class="overflow-hidden pt-20 md:pt-28"
+    aria-labelledby="ribbon-title"
+  >
+    <div class="container-page">
+      <div class="reveal mb-10 max-w-2xl">
+        <p class="eyebrow mb-4">{t.home.ribbonEyebrow}</p>
+        <h2
+          id="ribbon-title"
+          class="text-ink text-4xl font-semibold md:text-5xl"
+        >
+          {t.home.ribbonTitle}
+        </h2>
+      </div>
+    </div>
+    <PhotoRibbon events={allEvents} />
   </section>
 
   <!-- Derniers événements ---------------------------------------------- -->
@@ -217,6 +296,7 @@ const webPage = {
   <section id="contact" class="pb-8" aria-labelledby="contact-title">
     <div class="container-page">
       <div class="contact-panel reveal relative isolate overflow-hidden rounded-[2rem] px-6 py-14 text-center sm:px-12 md:py-20">
+        <Zellige id="zellige-contact" class="contact-zellige -z-10" size={64} />
         <p class="eyebrow mb-4 justify-center text-white/80">
           {t.home.contactEyebrow}
         </p>
@@ -266,6 +346,90 @@ const webPage = {
         color-mix(in oklch, var(--accent) 10%, transparent),
         transparent 70%
       );
+  }
+
+  /* Discreet zellige lattice, fading out towards the text. */
+  :global(.hero-zellige) {
+    color: var(--primary);
+    opacity: 0.07;
+    mask-image: radial-gradient(
+      ellipse 60% 75% at 85% 30%,
+      #000 10%,
+      transparent 70%
+    );
+  }
+  :global(.contact-zellige) {
+    color: white;
+    opacity: 0.06;
+  }
+
+  /* Key figures: CSS-only counters, animated once as they scroll into view. */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    overflow: hidden;
+    background: var(--border);
+  }
+  @media (width >= 48rem) {
+    .stats {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+  .stat {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    padding: 1.5rem clamp(1rem, 3vw, 2rem);
+    background: var(--surface);
+  }
+  .stat-value {
+    font-size: clamp(2.2rem, 5vw, 3.2rem);
+    font-weight: 600;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  .stat:first-child .stat-value {
+    color: var(--primary);
+  }
+  @property --num {
+    syntax: "<integer>";
+    inherits: false;
+    initial-value: 0;
+  }
+  .counter {
+    --num: var(--target);
+    counter-reset: num var(--num);
+  }
+  .counter::after {
+    content: counter(num);
+  }
+  @keyframes count {
+    from {
+      --num: 0;
+    }
+    to {
+      --num: var(--target);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .counter {
+        animation: count linear both;
+        animation-timeline: view();
+        animation-range: entry 20% cover 45%;
+      }
+    }
+  }
+
+  .value-index {
+    font-size: 2.25rem;
+    font-weight: 600;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1px color-mix(in oklch, var(--sage) 60%, transparent);
   }
 
   .collage-a {
